@@ -93,7 +93,8 @@ select{max-width:100%}
 body.v-pads #live{display:block}
 body.v-pads #grid,body.v-pads #lanebox{display:none}
 #lpads{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
-#lpads button{min-height:96px;font-weight:700;white-space:pre-line;border:2px solid var(--c);border-radius:10px;touch-action:none}
+#lpads button{min-height:96px;font-weight:700;white-space:pre-line;border:2px solid var(--c);border-radius:10px;touch-action:manipulation}
+@media (max-height:520px){header{position:static}}
 #lpads button.hit{background:var(--c);color:#000}
 #lpads button.sel{box-shadow:0 0 0 2px #fff}
 #rec.on{background:var(--warn);border-color:var(--warn);color:#000}
@@ -135,7 +136,11 @@ body.simple .adv{display:none !important}
   header button{padding:0 9px;min-width:44px;min-height:44px}
   button,select{min-height:44px}
   input[type=number],input[type=text],select{font-size:16px} /* evita el zoom automático de iOS */
-  #bpm{width:62px}
+  #bpm{width:62px;min-height:44px}
+  .modes button{min-height:44px}
+  .bpmbox button{min-width:44px}
+  input[type=range]{height:44px}
+  #meter{width:54px}
   .ctl{grid-template-columns:76px 1fr 36px}
 }
 </style>
@@ -235,7 +240,7 @@ const I18N = {
     vol: 'Volumen', pan: 'Pan', tune: 'Afinación', decay: 'Decay', tone: 'Tono', rev: 'Envío reverb', dly: 'Envío delay', frev: 'Reverb', fdly: 'Delay', fb: 'Feedback', sc: 'Sidechain', master: 'Master',
     save: 'Guardar', load: 'Cargar', del: 'Borrar', close: 'Cerrar', name: 'Nombre del patrón', saved: 'Patrón guardado', loaded: 'Patrón cargado', none: 'Aún no hay patrones guardados.', confirmDel: '¿Borrar el patrón guardado?', overwrite: 'Ya existe un patrón con ese nombre. ¿Sobrescribirlo?', newPat: 'Patrón vacío',
     exportT: 'Exportar WAV', bars: 'Compases', exportB: 'Exportar', rendering: 'Renderizando…', exported: 'WAV exportado', exportErr: 'No se pudo exportar', storeErr: 'No se pudo guardar en este navegador', noAudio: 'Este navegador no soporta Web Audio',
-    tapTempo: 'Marcar el tempo con toques', vOne: '1 pista', vAll: 'Todas', vPads: 'Tocar', rec: '● Grabar', sounds: 'Sonidos', more: '+ Energía', less: '− Energía', simple: 'Simple', advanced: 'Avanzado', help: 'Ayuda', start: 'Empezar',
+    tapTempo: 'Marcar el tempo con toques', vOne: '1 pista', vAll: 'Todas', vPads: 'Tocar', rec: '● Grabar', sounds: 'Sonidos', more: '+ Energía', less: '− Energía', simple: 'Simple', advanced: 'Avanzado', modeLbl: 'Modo (toca para cambiar)', help: 'Ayuda', start: 'Empezar',
     liveHint: 'Toca los pads para oír cada sonido. Con Grabar activado y la reproducción en marcha, lo que toques se escribe en el patrón.',
     hAsst: 'Elige un estilo y pulsa Generar. Luego sube o baja la energía.', hTrack: 'Elige un sonido para esta pista: al tocarlo lo oyes.', noMore: 'Ya no hay más que añadir', noLess: 'Solo queda el bombo',
     helpL: ['Pulsa ▶ para escuchar. En iPhone, quita antes el modo silencio.', 'En Asistente, elige un estilo y pulsa «Generar groove completo».', 'Con «+ Energía» y «− Energía» añades o quitas instrumentos.', 'Toca los cuadros de colores para poner o quitar golpes. En Sonidos cambias el sonido de cada pista.', 'En «Tocar» tienes 12 pads grandes para tocar con los dedos. El botón de modo cambia entre Simple y Avanzado.', 'Si algo no te gusta, ↶ lo deshace siempre.'],
@@ -245,7 +250,7 @@ const I18N = {
     vol: 'Volume', pan: 'Pan', tune: 'Tune', decay: 'Decay', tone: 'Tone', rev: 'Reverb send', dly: 'Delay send', frev: 'Reverb', fdly: 'Delay', fb: 'Feedback', sc: 'Sidechain', master: 'Master',
     save: 'Save', load: 'Load', del: 'Delete', close: 'Close', name: 'Pattern name', saved: 'Pattern saved', loaded: 'Pattern loaded', none: 'No saved patterns yet.', confirmDel: 'Delete the saved pattern?', overwrite: 'A pattern with that name already exists. Overwrite it?', newPat: 'Empty pattern',
     exportT: 'Export WAV', bars: 'Bars', exportB: 'Export', rendering: 'Rendering…', exported: 'WAV exported', exportErr: 'Export failed', storeErr: 'Could not save in this browser', noAudio: 'This browser does not support Web Audio',
-    tapTempo: 'Tap the tempo', vOne: '1 track', vAll: 'All', vPads: 'Play', rec: '● Record', sounds: 'Sounds', more: '+ Energy', less: '− Energy', simple: 'Simple', advanced: 'Advanced', help: 'Help', start: 'Start',
+    tapTempo: 'Tap the tempo', vOne: '1 track', vAll: 'All', vPads: 'Play', rec: '● Record', sounds: 'Sounds', more: '+ Energy', less: '− Energy', simple: 'Simple', advanced: 'Advanced', modeLbl: 'Mode (tap to switch)', help: 'Help', start: 'Start',
     liveHint: 'Tap the pads to hear each sound. With Record on and playback running, what you play is written into the pattern.',
     hAsst: 'Pick a style and press Generate. Then raise or lower the energy.', hTrack: 'Pick a sound for this track: tap to hear it.', noMore: 'Nothing more to add', noLess: 'Only the kick is left',
     helpL: ['Press ▶ to listen. On iPhone, turn off silent mode first.', 'In Assistant, pick a style and press "Generate full groove".', 'Use "+ Energy" and "− Energy" to add or remove instruments.', 'Tap the coloured squares to add or remove hits. In Sounds you change the sound of each track.', '"Play" gives you 12 big pads to play with your fingers. The mode button switches between Simple and Advanced.', 'If you do not like something, ↶ always undoes it.'],
@@ -505,7 +510,7 @@ function migrate(d) {
   base.fx = { rev: n(f.rev, 0.3, 0, 1), dly: n(f.dly, 0.25, 0, 1), fb: n(f.fb, 0.35, 0, 0.8), div: DIVS[f.div] ? f.div : '3/16', sc: n(f.sc, 0.5, 0, 1), master: n(f.master, 0.8, 0, 1) };
   (Array.isArray(d.tracks) ? d.tracks : []).slice(0, NT).forEach((s, i) => {
     if (!s) return; const tr = base.tracks[i];
-    tr.kit = KITS[s.kit] ? String(s.kit) : '909'; tr.vol = n(s.vol, 0.8, 0, 1); tr.pan = n(s.pan, 0, -1, 1); tr.tune = Math.round(n(s.tune, 0, -12, 12));
+    tr.kit = Object.prototype.hasOwnProperty.call(KITS, s.kit) ? String(s.kit) : '909'; tr.vol = n(s.vol, 0.8, 0, 1); tr.pan = n(s.pan, 0, -1, 1); tr.tune = Math.round(n(s.tune, 0, -12, 12));
     tr.decay = n(s.decay, 0.5, 0, 1); tr.tone = n(s.tone, 0.5, 0, 1); tr.rev = n(s.rev, 0, 0, 1); tr.dly = n(s.dly, 0, 0, 1); tr.mute = !!s.mute; tr.solo = !!s.solo;
     (Array.isArray(s.steps) ? s.steps : []).slice(0, NS).forEach((p, j) => { if (p) tr.steps[j] = { on: !!p.on, vel: n(p.vel, 0.8, 0.05, 1), acc: !!p.acc, prob: Math.round(n(p.prob, 100, 5, 100)) }; });
   });
@@ -633,7 +638,7 @@ function buildGraph(c, getS) {
   ];
   // Dispara una pista en el instante t leyendo sus parámetros actuales
   G.trigger = (i, t, vel, acc) => {
-    const s = getS(), x = s.tracks[i], K = KITS[x.kit] || KITS['909'];
+    const s = getS(), x = s.tracks[i], K = Object.prototype.hasOwnProperty.call(KITS, x.kit) ? KITS[x.kit] : KITS['909'];
     let o = G.tr[i].g;
     if (i === iOH) { const ch = c.createGain(); ch.connect(o); G.lastOH = ch; o = ch; } // nodo propio para el choke
     V[i](o, t, vel * (acc ? 1.3 : 1) * 0.7, { kit: K.b, mk: x.kit, r: Math.pow(2, (x.tune + K.tu) / 12), dm: Math.pow(3, x.decay * 2 - 1) * K.dc, tone: x.tone, tb: Math.pow(2, (x.tone - 0.5) * 2) * K.tb });
@@ -686,7 +691,7 @@ function tick() {
 }
 function play() { if (!ensureCtx()) return; seq.playing = true; seq.step = 0; seq.bar = 0; seq.q = []; seq.next = ctx.currentTime + 0.08; tick(); refresh(); }
 function stop() { seq.playing = false; clearTimeout(seq.timer); seq.q = []; refresh(); }
-function audition(i) { if (!ensureCtx()) return; const go = () => G.trigger(i, ctx.currentTime + 0.01, 0.8, false); if (ctx.state === 'running') go(); else ctx.resume().then(go, () => {}); }
+function audition(i) { if (!ensureCtx()) return; const t0 = performance.now(), go = () => { if (performance.now() - t0 < 300) G.trigger(i, ctx.currentTime + 0.01, 0.8, false); }; if (ctx.state === 'running') go(); else ctx.resume().then(go, () => {}); }
 
 /* ---------- 8. Exportación WAV (OfflineAudioContext, misma cadena) ---------- */
 function renderOffline(bars, state) {
@@ -764,18 +769,18 @@ function hitPad(i) {
   if (!ensureCtx()) return;
   ui.sel = i;
   if (!(ui.rec && seq.playing && seq.q.length && ctx.state === 'running')) { audition(i); refresh(); return; }
-  const now = ctx.currentTime, last = seq.q[seq.q.length - 1], next = { st: (last.st + 1) % NS, t: last.t + stepDur(S), un: true };
+  const now = ctx.currentTime, next = { st: seq.step, t: seq.next + swingOff(S, seq.step), un: true };
   let best = next; for (const e of seq.q) if (Math.abs(e.t - now) < Math.abs(best.t - now)) best = e;
   const was = S.tracks[i].steps[best.st].on;
-  if (!best.un && !(was && best.t > now)) G.trigger(i, now + 0.005, 0.8, false); // si el paso aún no está programado, lo tocará el scheduler
-  cmd(() => { S.tracks[i].steps[best.st].on = true; });
+  if (!best.un && !was) G.trigger(i, now + 0.005, 0.8, false); // si el paso ya sonaba o aún no está programado, lo toca el scheduler
+  cmd(() => { Object.assign(S.tracks[i].steps[best.st], { on: true, vel: 0.8, acc: false, prob: 100 }); });
 }
 
 /* ---------- 10. Almacenamiento (localStorage, versionado, siempre en try/catch) ---------- */
 const KEY = 'dr11';
 let store = { v: DATA_V, lang: 'es', cur: null, pats: Object.create(null), simple: true, seen: false, view: 'one' };
 function loadStore() {
-  try { const d = JSON.parse(localStorage.getItem(KEY)); if (d && typeof d === 'object') { store.lang = d.lang === 'en' ? 'en' : 'es'; store.cur = d.cur || null; store.simple = d.simple !== false; store.seen = !!d.seen; if (['one', 'all', 'pads'].includes(d.view)) store.view = d.view; if (d.pats && typeof d.pats === 'object') for (const k of Object.keys(d.pats)) store.pats[k] = d.pats[k]; } } catch (e) { /* sin datos o bloqueado */ }
+  try { const d = JSON.parse(localStorage.getItem(KEY)); if (d && typeof d === 'object') { store.lang = d.lang === 'en' ? 'en' : 'es'; store.cur = d.cur || null; store.simple = d.simple === undefined ? !d.cur : d.simple !== false; store.seen = !!d.seen; if (['one', 'all', 'pads'].includes(d.view)) store.view = d.view; if (d.pats && typeof d.pats === 'object') for (const k of Object.keys(d.pats)) store.pats[k] = d.pats[k]; } } catch (e) { /* sin datos o bloqueado */ }
 }
 let saveT = 0, saveWarned = false;
 function saveStore() { try { store.cur = S; store.lang = lang; store.simple = ui.simple; store.view = ui.view; localStorage.setItem(KEY, JSON.stringify(store)); return true; } catch (e) { if (!saveWarned) { saveWarned = true; toast(t('storeErr')); } return false; } }
@@ -793,9 +798,13 @@ function slider(parent, key, min, max, step, get, set, def, adv) {
   const row = el('label', adv ? 'ctl adv' : 'ctl'), lab = el('span'), inp = el('input'), out = el('output');
   inp.type = 'range'; inp.min = min; inp.max = max; inp.step = step;
   inp.addEventListener('input', () => { gestBegin(); set(+inp.value); if (G) G.sync(); out.textContent = fmt(+inp.value, step); saveSoon(); });
-  inp.addEventListener('change', gestEnd);
-  let lastTap = 0; // doble toque: vuelve al valor por defecto
-  inp.addEventListener('pointerdown', () => { const n = Date.now(); if (n - lastTap < 350) setTimeout(() => cmd(() => set(def)), 60); lastTap = n; });
+  // Doble toque en el mismo punto: vuelve al valor por defecto (un solo paso de deshacer, aplicado al soltar)
+  let tap = null;
+  inp.addEventListener('pointerdown', e => { const n = Date.now(); if (tap && n - tap.t < 300 && Math.abs(e.clientX - tap.x) < 24) tap.reset = true; else { gestEnd(); tap = { t: n, x: e.clientX, snap: JSON.stringify(S), n: H.u.length }; } });
+  const fin = () => { if (tap && tap.reset) { const k = tap; tap = null; gest = null; H.u.length = Math.min(H.u.length, k.n); S = JSON.parse(k.snap); set(def); pushCmd(k.snap, JSON.stringify(S)); live(); } else gestEnd(); };
+  inp.addEventListener('change', fin);
+  const late = () => { if (tap && tap.reset) setTimeout(fin, 0); };
+  inp.addEventListener('pointerup', late); inp.addEventListener('pointercancel', late);
   row.append(lab, inp, out); parent.append(row);
   ui.sliders.push({ key, lab, inp, out, get, step });
 }
@@ -848,8 +857,8 @@ function buildUI() {
   STYLES.forEach(s => { const b = el('button'); b.onclick = () => cmd(() => { S.style = s.id; }); $('styles').append(b); ui.styleBtns.push(b); });
   // Vistas, pads en directo, modo y ayudas
   document.querySelectorAll('#views button').forEach(b => (b.onclick = () => { ui.view = b.dataset.view; refresh(); saveSoon(); }));
-  TR.forEach((tr, i) => { const b = el('button'); b.style.setProperty('--c', tr.c); b.addEventListener('pointerdown', e => { e.preventDefault(); hitPad(i); b.classList.add('hit'); setTimeout(() => b.classList.remove('hit'), 110); }); b.addEventListener('keydown', e => { if (e.key === 'Enter') hitPad(i); }); $('lpads').append(b); ui.lpads.push(b); });
-  $('rec').onclick = () => { ui.rec = !ui.rec; refresh(); };
+  TR.forEach((tr, i) => { const b = el('button'); b.style.setProperty('--c', tr.c); b.addEventListener('pointerdown', e => { e.preventDefault(); hitPad(i); b.classList.add('hit'); setTimeout(() => b.classList.remove('hit'), 110); }); b.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && !e.repeat) { e.preventDefault(); hitPad(i); } }); $('lpads').append(b); ui.lpads.push(b); });
+  $('rec').onclick = () => { ui.rec = !ui.rec; if (ui.rec && !seq.playing) play(); else refresh(); };
   $('bmode').onclick = () => { ui.simple = !ui.simple; if (ui.simple) ui.mode = 'note'; refresh(); saveSoon(); };
   $('bhelp').onclick = helpDialog;
   $('bDn').onclick = () => cmd(() => { S.bpm = clamp(S.bpm - 1, 60, 200); }); $('bUp').onclick = () => cmd(() => { S.bpm = clamp(S.bpm + 1, 60, 200); });
@@ -871,6 +880,9 @@ function buildUI() {
   });
   document.addEventListener('visibilitychange', () => { if (document.hidden) { gestEnd(); saveStore(); } else if (ctx && seq.playing && ctx.state !== 'running') ctx.resume(); });
   window.addEventListener('pagehide', () => { gestEnd(); saveStore(); });
+  // iOS: el audio solo se desbloquea en touchend/click, no en pointerdown
+  const unlock = () => { ensureCtx(); document.removeEventListener('touchend', unlock); document.removeEventListener('click', unlock); };
+  document.addEventListener('touchend', unlock); document.addEventListener('click', unlock);
   requestAnimationFrame(frame);
 }
 function select(i) { ui.sel = i; refresh(); const c = ui.chips[i], box = $('chips'); box.scrollLeft = c.offsetLeft - box.clientWidth / 2 + c.offsetWidth / 2; }
@@ -911,10 +923,10 @@ function refresh() {
   // Presets de la pista seleccionada (se reconstruyen solo al cambiar de pista o de idioma)
   const pr = PRESETS[TR[ui.sel].id], box = $('presets');
   if (ui.pKey !== ui.sel + lang) { ui.pKey = ui.sel + lang; box.textContent = ''; box.style.setProperty('--c', TR[ui.sel].c); ui.presetBtns = pr.map((p, k) => { const b = el('button', '', p[lang === 'es' ? 0 : 1]); b.onclick = () => applyPreset(ui.sel, k); box.append(b); return b; }); }
-  pr.forEach((p, k) => ui.presetBtns[k].classList.toggle('on', x.kit === p[2] && x.tune === p[3] && x.decay === p[4] && x.tone === p[5]));
-  document.querySelectorAll('#views button').forEach(b => b.classList.toggle('on', b.dataset.view === ui.view || (b.dataset.view === 'all' && ui.view === 'one' && !isMobile())));
+  pr.forEach((p, k) => { const on = x.kit === p[2] && x.tune === p[3] && x.decay === p[4] && x.tone === p[5]; ui.presetBtns[k].classList.toggle('on', on); ui.presetBtns[k].setAttribute('aria-pressed', on); });
+  document.querySelectorAll('#views button').forEach(b => { const on = b.dataset.view === ui.view || (b.dataset.view === 'all' && ui.view === 'one' && !isMobile()); b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
   $('rec').classList.toggle('on', ui.rec); $('rec').setAttribute('aria-pressed', ui.rec);
-  $('bmode').textContent = t(ui.simple ? 'simple' : 'advanced');
+  $('bmode').textContent = t(ui.simple ? 'simple' : 'advanced'); $('bmode').setAttribute('aria-label', t('modeLbl') + ': ' + $('bmode').textContent); $('bmode').title = t('modeLbl');
 }
 // Bucle de dibujo: paso actual iluminado (sincronizado con el reloj de audio) y medidor de pico
 let mBuf = null, clipHold = 0;
@@ -955,7 +967,7 @@ function patternsDialog() {
 function helpDialog() {
   const b = openModal('DR-11 · ' + t('help')), ol = el('ol'), r = el('div', 'btns'), c = el('button', 'big', t('start'));
   t('helpL').forEach(x => ol.append(el('li', '', x)));
-  c.onclick = closeModal; r.append(c); b.append(ol, r);
+  c.onclick = closeModal; r.append(c); b.append(ol, r); c.focus();
 }
 function exportDialog() {
   const b = openModal(t('exportT')), row = el('div', 'li'), sel = el('select'), go = el('button', 'big', t('exportB'));
@@ -971,7 +983,7 @@ S = store.cur ? migrate(store.cur) : newState();
 buildUI();
 if (!store.cur) { generate(true); H.u.length = 0; } // primer arranque: groove base del estilo, listo para sonar
 refresh();
-window.addEventListener('resize', refresh);
+window.matchMedia('(max-width:820px)').addEventListener('change', refresh);
 if (!store.seen) { store.seen = true; helpDialog(); saveSoon(); } // ayuda breve la primera vez
 // Gancho para pruebas automáticas (no afecta al uso normal)
 window.DR11 = { VERSION, get S() { return S; }, seq, ui, energy, hitPad, PRESETS, renderOffline, wavBlob, migrate, undo, redo, STYLES };
