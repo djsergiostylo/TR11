@@ -26,4 +26,9 @@
 | Pads de pasos 4×4 en móvil | Pads de unos 85×60 px; antes 42×54 |
 | Vista «Todas» en móvil solo de lectura | Con 16 columnas los pads miden unos 18 px: demasiado pequeños para tocar; tocar la fila abre la pista |
 | Grabación con pads cuantizada al paso más cercano | Sencillo y siempre a tempo |
+| Sonidos pre-renderizados a buffer (v0.3.0) | 2 nodos por golpe en vez de 4-10; directo y WAV usan los mismos buffers |
+| Normalizar cada sonido a un pico fijo por pista | Cambiar de preset no descompensa la mezcla; los niveles se fijaron midiendo, falta ajuste de oído |
+| Variante de sonido elegida por compás y paso | Los hats no suenan idénticos y el WAV sigue siendo igual a la reproducción |
+| Rumble pre-renderizado (bombo → reverb → filtro → saturación) | Técnica real de rumble sin coste en tiempo de ejecución |
+| Play espera a que los sonidos estén generados (unos 100 ms la primera vez) | Evita que falten golpes en el primer compás |
 | Mute, solo y estilo forman parte del patrón (y del deshacer) | Un solo modelo de datos, sin estados paralelos |

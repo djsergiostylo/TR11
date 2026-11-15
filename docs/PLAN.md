@@ -6,21 +6,28 @@
 ## v0.2.0 (publicada) — sonidos, facilidad y táctil
 Kits 606/707-style, 88 presets de sonido por pista, modo Simple/Avanzado con ayuda inicial, + / − energía, vista Tocar con grabación cuantizada, vista Todas en móvil, pads 4×4, faders gruesos, BPM − / + y TAP.
 
-## v0.3 — profundidad de secuenciador y sonido
-- Drive por pista.
-- Rumble real: bombo → reverb → pasa-bajos → sidechain, con canal propio.
+## v0.3.0 (publicada) — sonido y rendimiento de audio
+Sonidos pre-renderizados y normalizados, rumble real, bombo con pegada, variaciones por golpe, drive por pista, aviso de carga.
+
+## v0.4 — mezcla y master
+- Limitador con anticipación (AudioWorklet), compresor de bus, EQ de 3 bandas, graves en mono, sidechain por pista, dos tamaños de reverb.
+
+## v0.5 — visual
+- Repintado selectivo, cabecera de una fila en móvil, pads con la fuerza visible, destello por pista, medidores por pista, forma de onda del sonido.
+
+## Después — profundidad de secuenciador
 - 32 y 64 pasos, longitud por pista (polimetría), ratchet/flam, micro-desplazamiento.
 - Patrones A/B/C/D y cadena; exportar/importar patrón como JSON.
 - Asistente: Variar, densidad, candado, Fill, Más/Menos energía, Humanizar; 4 estilos más (Acid, Minimal, Industrial, Melodic).
 - WAV de 24 bits.
 
-## v0.4 — samples y master
+## Después — samples
 - Samples propios (WAV/MP3, edición básica, IndexedDB), kits de usuario.
 - Master: EQ de 3 bandas, compresor, medidor RMS.
 - Bloqueo de parámetros por paso; generador euclidiano; aleatorizar.
 - Stems y exportación MIDI.
 
-## v0.5 — asistente completo
+## Después — asistente completo
 - Modo Guía, consejos en vivo (clip, choque de graves, afinación del bombo), "Guardar como Mi estilo", comparación A/B.
 
 ## Frentes abiertos

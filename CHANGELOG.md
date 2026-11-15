@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.3.0 — 2026-11-15
+Suena mejor y pesa menos.
+- **Motor de audio nuevo:** cada sonido se genera una sola vez y después solo se reproduce. Cada golpe usa 2 nodos de audio en lugar de 4 a 10: menos consumo y menos riesgo de cortes en el móvil.
+- **Niveles equilibrados automáticamente:** cambiar de sonido, kit, afinación o tono ya no descompensa la mezcla.
+- **Rumble real:** el bombo pasa por una reverb oscura, un filtro de graves y saturación, y el sidechain lo hace respirar.
+- **Bombo con más pegada** (segunda envolvente de tono) y 808 con armónicos para que se oiga en altavoces pequeños.
+- **Hats, platos, caja y palmada con variaciones:** los golpes seguidos ya no suenan idénticos. La variación es la misma en el WAV.
+- **Caja con más cuerpo** (resonancia en el ruido).
+- **Drive por pista** (modo Avanzado): saturación de suave a agresiva.
+- Aviso discreto en el medidor (marca naranja) si el audio llega justo.
+- El WAV usa exactamente los mismos sonidos que la reproducción.
+
 ## v0.2.0 — 2026-11-15
 Más sonidos, más fácil y mejor con los dedos.
 - **Sonidos:** kits nuevos 606-style y 707-style, y de 6 a 8 sonidos con nombre por pista (88 en total) que se eligen con un toque y suenan al tocarlos.

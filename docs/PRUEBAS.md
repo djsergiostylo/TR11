@@ -22,6 +22,17 @@
 3. Faders: ¿se arrastran bien con el dedo sin mover la página? ¿Funciona el doble toque?
 4. Modo Simple: ¿se entiende sin leer nada más que la ayuda inicial?
 
+## v0.3.0: hechas en navegador sin interfaz
+- Generar los 12 sonidos tarda unos 80 ms; 0 pasos tarde a 150 BPM.
+- Niveles medidos por pista en los 4 kits: equilibrados entre kits.
+- Exportación idéntica entre renders; pico máximo 0,92 con todo al máximo y drive a tope.
+
+## v0.3.0: pendientes de probar a mano
+1. Escuchar los 6 estilos en el móvil y con auriculares: ¿algún instrumento sobra o falta? (es lo que no puedo comprobar yo)
+2. Rumble: ¿se nota el grave «respirando» entre bombos, sin tapar el bombo?
+3. Mover Tono, Decay o Drive mientras suena: el cambio debe oírse casi al instante y sin cortes.
+4. En un Android modesto, las 12 pistas a 150-200 BPM: ¿aparece la marca naranja en el medidor?
+
 ## Pendientes de probar a mano
 ### iPhone (Safari)
 1. Primer toque en ▶ y en el nombre de una pista: ¿suena a la primera? ¿Y con el interruptor de silencio puesto?
