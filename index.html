@@ -640,19 +640,21 @@ function renderTrack(i, x, sr) {
     oc.oncomplete = e => {
       const b = e.renderedBuffer, n = b.length, fade = Math.floor(sr * 0.004), ch = [];
       for (let k = 0; k < nv; k++) ch.push(b.getChannelData(k));
-      ok(ch.map(d => { let pk = 0; for (let j = 0; j < n; j++) { const a = Math.abs(d[j]); if (a > pk) pk = a; } const g = pk > 0 ? TP[i] / pk : 1; const nb = oc.createBuffer(1, n, sr), o = nb.getChannelData(0); for (let j = 0; j < n; j++) o[j] = d[j] * g * (j > n - fade ? (n - j) / fade : 1); return nb; }));
+      ok(ch.map(d => { let pk = 0; for (let j = 0; j < n; j++) { const a = Math.abs(d[j]); if (a > pk) pk = a; } const g = pk > 0 ? TP[i] / pk : 1; const nb = window.AudioBuffer && AudioBuffer.length ? new AudioBuffer({ length: n, sampleRate: sr, numberOfChannels: 1 }) : oc.createBuffer(1, n, sr), o = nb.getChannelData(0); for (let j = 0; j < n; j++) o[j] = d[j] * g * (j > n - fade ? (n - j) / fade : 1); return nb; }));
     };
     try { const pr = oc.startRendering(); if (pr && pr.catch) pr.catch(no); } catch (e) { no(e); }
   });
 }
 // Caché de sonidos ya renderizados (volver a un sonido anterior o exportar no cuesta nada)
 const CACHE = new Map();
+let rq = Promise.resolve();
 function getSound(i, x, sr) {
   const k = sndKey(i, x, sr);
   if (CACHE.has(k)) { const v = CACHE.get(k); CACHE.delete(k); CACHE.set(k, v); return v; }
-  const pr = renderTrack(i, x, sr); CACHE.set(k, pr);
-  pr.catch(() => CACHE.delete(k));
-  if (CACHE.size > 48) CACHE.delete(CACHE.keys().next().value);
+  const xc = JSON.parse(JSON.stringify(x)), pr = rq.then(() => renderTrack(i, xc, sr)); // de uno en uno: Safari limita los contextos offline simultáneos
+  rq = pr.catch(() => {}); CACHE.set(k, pr);
+  pr.catch(() => CACHE.delete(k)); // un fallo no se queda en caché: se reintenta
+  if (CACHE.size > 24) CACHE.delete(CACHE.keys().next().value);
   return pr;
 }
 // buildGraph crea la MISMA cadena para el directo (AudioContext) y la exportación (OfflineAudioContext).
@@ -720,11 +722,11 @@ const SND = [];
 function syncSounds() {
   if (!ctx) return;
   const sr = ctx.sampleRate;
-  S.tracks.forEach((x, i) => { const k = sndKey(i, x, sr), e = SND[i] || (SND[i] = { want: '', bufs: null, p: null }); if (e.want === k) return; e.want = k; e.p = getSound(i, x, sr).then(b => { if (e.want === k) e.bufs = b; }, err => console.error(err)); });
+  S.tracks.forEach((x, i) => { const k = sndKey(i, x, sr), e = SND[i] || (SND[i] = { want: '', bufs: null, p: null }); if (e.want === k) return; e.want = k; e.p = getSound(i, x, sr).then(b => { if (e.want === k) e.bufs = b; }, err => { console.error(err); if (e.want === k) e.want = ''; }); }); // si falla, la próxima llamada reintenta
 }
 function soundsReady() { syncSounds(); return Promise.all(SND.map(e => e && e.p)); }
 let sndT = 0;
-function syncAudio(now) { if (!G) return; G.sync(); clearTimeout(sndT); if (now) syncSounds(); else sndT = setTimeout(syncSounds, 40); }
+function syncAudio(now) { if (!G) return; G.sync(); if (now) { clearTimeout(sndT); sndT = 0; syncSounds(); } else if (!sndT) sndT = setTimeout(() => { sndT = 0; syncSounds(); }, 60); } // al arrastrar, el sonido se actualiza cada 60 ms
 let audN = 0;
 const seq = { playing: false, step: 0, bar: 0, next: 0, timer: 0, tok: 0, q: [], stats: { steps: 0, late: 0 } };
 const LOOK_MS = 25, AHEAD = 0.12;
@@ -759,10 +761,10 @@ function tick() {
 function play() {
   if (!ensureCtx()) return;
   const k = ++seq.tok; seq.playing = true; refresh();
-  soundsReady().then(() => { if (seq.tok !== k) return; clearTimeout(seq.timer); seq.step = 0; seq.bar = 0; seq.q = []; seq.next = ctx.currentTime + 0.08; tick(); }); // espera a que los sonidos estén listos
+  soundsReady().then(() => { if (seq.tok !== k) return; clearTimeout(seq.timer); seq.step = 0; seq.bar = 0; seq.q = []; seq.next = ctx.currentTime + 0.08; tick(); }).catch(() => stop()); // espera a que los sonidos estén listos
 }
 function stop() { seq.tok++; seq.playing = false; clearTimeout(seq.timer); seq.q = []; refresh(); }
-function audition(i) { if (!ensureCtx()) return; const t0 = performance.now(), go = () => { if (performance.now() - t0 < 400) G.trigger(i, ctx.currentTime + 0.01, 0.8, false, audN++); }; soundsReady().then(() => { if (ctx.state === 'running') go(); else ctx.resume().then(go, () => {}); }); }
+function audition(i) { if (!ensureCtx()) return; const t0 = performance.now(), go = () => { if (performance.now() - t0 < 400) G.trigger(i, ctx.currentTime + 0.01, 0.8, false, audN++); }; const fire = () => { if (ctx.state === 'running') go(); else ctx.resume().then(go, () => {}); }; if (SND[i] && SND[i].bufs) { syncSounds(); fire(); } else soundsReady().then(fire); }
 
 /* ---------- 8. Exportación WAV (OfflineAudioContext, misma cadena) ---------- */
 async function renderOffline(bars, state) {
