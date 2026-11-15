@@ -19,4 +19,11 @@
 | Faders horizontales | Los verticales fallan en táctil según navegador |
 | Móvil: una pista, pads 8×2, carril y pestañas Pista/Efectos/Asistente | Todo cabe en una pantalla con pads de más de 40 px |
 | 6 estilos en vez de 4 | El coste extra era mínimo |
+| Cada versión publicada se copia en `versiones/vX.Y.Z/` | Permite volver a una versión anterior sin depender de etiquetas (la sesión no puede crearlas) |
+| Kits 606 y 707 como variantes de los motores 808 y 909 | Sonidos claramente distintos con muy poco código y sin coste de CPU |
+| Presets = kit + afinación + decay + tono | Son parámetros normales: editables y deshacibles |
+| Modo Simple por defecto | El público incluye principiantes; Avanzado está a un toque |
+| Pads de pasos 4×4 en móvil | Pads de unos 85×60 px; antes 42×54 |
+| Vista «Todas» en móvil solo de lectura | Con 16 columnas los pads miden unos 18 px: demasiado pequeños para tocar; tocar la fila abre la pista |
+| Grabación con pads cuantizada al paso más cercano | Sencillo y siempre a tempo |
 | Mute, solo y estilo forman parte del patrón (y del deshacer) | Un solo modelo de datos, sin estados paralelos |

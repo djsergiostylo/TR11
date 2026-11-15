@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.2.0 — 2026-11-15
+Más sonidos, más fácil y mejor con los dedos.
+- **Sonidos:** kits nuevos 606-style y 707-style, y de 6 a 8 sonidos con nombre por pista (88 en total) que se eligen con un toque y suenan al tocarlos.
+- **Modo Simple** (por defecto) con lo esencial, y **Modo Avanzado** con todos los controles. Ayuda breve la primera vez y botón «?».
+- **+ Energía / − Energía:** añade o quita instrumentos del groove en orden musical.
+- **Vista «Tocar»:** 12 pads grandes para tocar con los dedos; con Grabar, lo que tocas se escribe cuantizado en el patrón.
+- **Vista «Todas»** en el móvil: las 12 pistas a la vez; tocar una fila la abre.
+- Pads de pasos más grandes en el móvil (4×4), botones de al menos 44 px y faders más gruesos.
+- BPM con botones − / + y TAP para marcar el tempo; doble toque en un fader lo devuelve a su valor por defecto.
+- Los estilos se eligen con botones; el swing pasa al panel de efectos (modo Avanzado).
+- Las versiones anteriores quedan disponibles en `versiones/`.
+
 ## v0.1.0 — 2026-11-15
 Primera versión.
 - 12 pistas sintetizadas por código con dos kits (808-style y 909-style), elegibles por pista.

@@ -10,6 +10,18 @@
 - Un arrastre de fader, swing o carril = un solo paso de deshacer.
 - Guardar, cargar y borrar patrones; el patrón y el idioma persisten al recargar.
 
+## v0.2.0: hechas en navegador sin interfaz
+- Sin errores de consola en 1280×900 y 390×844 (táctil).
+- Energía: de 8 pistas baja a 1 (solo bombo), sube a 12 y se deshace por completo.
+- Grabar con pads escribe pasos en el patrón mientras suena.
+- Kits 606 y 707 suenan en todas las pistas probadas; exportación idéntica entre renders; 0 pasos tarde a 150 BPM.
+
+## v0.2.0: pendientes de probar a mano (móvil)
+1. Vista «Tocar»: ¿responden los pads al instante? ¿Se pueden tocar dos a la vez?
+2. Grabar: ¿los golpes caen donde esperas?
+3. Faders: ¿se arrastran bien con el dedo sin mover la página? ¿Funciona el doble toque?
+4. Modo Simple: ¿se entiende sin leer nada más que la ayuda inicial?
+
 ## Pendientes de probar a mano
 ### iPhone (Safari)
 1. Primer toque en ▶ y en el nombre de una pista: ¿suena a la primera? ¿Y con el interruptor de silencio puesto?

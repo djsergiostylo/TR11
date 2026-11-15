@@ -17,13 +17,18 @@ button:active{filter:brightness(1.4)}
 button.on{background:var(--acc);color:#000;border-color:var(--acc)}
 button:disabled{opacity:.35;cursor:default}
 button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--acc);outline-offset:1px}
-input[type=range]{accent-color:var(--acc);width:100%;height:32px;margin:0;touch-action:pan-y}
+input[type=range]{-webkit-appearance:none;appearance:none;background:transparent;width:100%;height:40px;margin:0;touch-action:pan-y}
+input[type=range]::-webkit-slider-runnable-track{height:10px;border-radius:5px;background:#4a4a4a}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;border-radius:50%;background:var(--acc);margin-top:-9px;border:2px solid #111}
+input[type=range]::-moz-range-track{height:10px;border-radius:5px;background:#4a4a4a}
+input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:var(--acc);border:2px solid #111}
 input[type=number],input[type=text]{background:#161616;border:1px solid var(--line);border-radius:6px;min-height:40px;padding:0 8px;width:72px;user-select:text;-webkit-user-select:text}
 header{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:8px}
 .brand{font-weight:800;letter-spacing:2px;color:var(--acc);font-size:18px;margin-right:4px}
 #play{min-width:56px;font-size:18px}
 .fld{display:flex;align-items:center;gap:6px;color:var(--dim);font-size:12px}
-.fld input[type=range]{width:90px}
+.bpmbox button{min-width:40px;padding:0;font-size:18px}
+.bpmbox #tapT{font-size:13px;padding:0 10px}
 .sp{flex:1}
 #meter{width:70px;height:14px;background:#111;border:1px solid var(--line);border-radius:3px}
 main{padding:8px;max-width:1280px;margin:0 auto}
@@ -36,7 +41,7 @@ main{padding:8px;max-width:1280px;margin:0 auto}
 /* rejilla */
 .row{display:flex;gap:6px;align-items:center;margin-bottom:4px;border-radius:6px;padding:2px}
 .row.sel{background:#262626;box-shadow:inset 3px 0 0 var(--c)}
-.head{display:flex;gap:4px;align-items:center;flex:0 0 200px;min-width:0}
+.head{display:flex;gap:4px;align-items:center;flex:0 0 240px;min-width:0}
 .head .nm{flex:1;min-width:0;text-align:left;border-left:4px solid var(--c);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-height:36px}
 .head .ms{min-width:34px;padding:0;min-height:36px;font-weight:700;font-size:12px}
 .ms.m.on{background:var(--warn);border-color:var(--warn);color:#000}
@@ -80,26 +85,58 @@ select{max-width:100%}
 #mbox input[type=text]{flex:1;width:auto}
 #toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#000;border:1px solid var(--acc);padding:8px 14px;border-radius:20px;display:none;z-index:20;max-width:90vw}
 /* ===== móvil: una pista cada vez ===== */
+/* vistas, pads en directo, presets, modo simple */
+.seg{display:flex;gap:6px;margin-bottom:8px}
+.seg button{flex:1}
+#views button[data-view=one]{display:none}
+#live{display:none}
+body.v-pads #live{display:block}
+body.v-pads #grid,body.v-pads #lanebox{display:none}
+#lpads{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+#lpads button{min-height:96px;font-weight:700;white-space:pre-line;border:2px solid var(--c);border-radius:10px;touch-action:none}
+#lpads button.hit{background:var(--c);color:#000}
+#lpads button.sel{box-shadow:0 0 0 2px #fff}
+#rec.on{background:var(--warn);border-color:var(--warn);color:#000}
+.hint{color:var(--dim);font-size:12px;margin:6px 0}
+body:not(.simple) .simp{display:none}
+body.simple .adv{display:none !important}
+.presets,.styles{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-bottom:8px}
+.presets button.on{background:var(--c);border-color:var(--c);color:#000}
+.styles button.on{background:var(--acc);border-color:var(--acc);color:#000}
+#mbox ol{padding-left:20px;margin:0 0 10px}
+#mbox li{margin:8px 0}
+/* ===== móvil ===== */
 @media (max-width:820px){
   #chips{display:flex}
-  .row{display:none}
-  .row.sel{display:block;background:none;box-shadow:none;padding:0}
-  .head{flex:none;margin-bottom:8px}
-  .head .ms{min-width:48px;min-height:40px}
-  .head .nm{min-height:40px}
-  .pads{grid-template-columns:repeat(8,1fr);gap:5px}
-  .pad{min-height:54px;border-radius:6px}
-  #lane{height:96px}
+  #views button[data-view=one]{display:block}
+  /* vista de una pista: pads grandes 4×4 */
+  body.v-one .row{display:none}
+  body.v-one .row.sel{display:block;background:none;box-shadow:none;padding:0}
+  body.v-one .head{flex:none;margin-bottom:8px}
+  body.v-one .head .ms{min-width:52px;min-height:44px}
+  body.v-one .head .nm{min-height:44px}
+  body.v-one .pads{grid-template-columns:repeat(4,1fr);gap:7px}
+  body.v-one .pad{min-height:60px;border-radius:8px}
+  /* vista compacta de las 12 pistas: tocar una fila la abre */
+  body.v-all .row{margin-bottom:3px;gap:4px;cursor:pointer}
+  body.v-all .head{flex:0 0 46px}
+  body.v-all .head .ms,body.v-all .head .nm span{display:none}
+  body.v-all .head .nm{padding:0 6px;min-height:30px}
+  body.v-all .pads{gap:2px;pointer-events:none}
+  body.v-all .pad{min-height:30px;border-radius:3px}
+  #lpads{grid-template-columns:repeat(3,1fr)}
+  #lpads button{min-height:84px}
+  #lane{height:110px}
   #tabs{display:flex}
   #panels{display:block}
   .panel{display:none}
   .panel.show{display:block}
-  .fld.sw span{display:none}
   .brand{font-size:16px}
+  header button{padding:0 9px;min-width:44px;min-height:44px}
+  button,select{min-height:44px}
   input[type=number],input[type=text],select{font-size:16px} /* evita el zoom automático de iOS */
-  .modes button{min-height:40px}
-  #undo,#redo{min-width:40px}
-  header button{padding:0 8px}
+  #bpm{width:62px}
+  .ctl{grid-template-columns:76px 1fr 36px}
 }
 </style>
 </head>
@@ -107,20 +144,31 @@ select{max-width:100%}
 <header>
   <span class="brand">DR-11</span>
   <button id="play" data-i18n-title="play" aria-label="Play">▶</button>
-  <label class="fld">BPM <input id="bpm" type="number" min="60" max="200" step="1" inputmode="numeric"></label>
-  <label class="fld sw"><span data-i18n="swing">Swing</span> <input id="swing" type="range" min="0" max="0.6" step="0.01" aria-label="Swing"></label>
+  <span class="fld bpmbox"><button id="bDn" aria-label="BPM −1">−</button><input id="bpm" type="number" min="60" max="200" step="1" inputmode="numeric" aria-label="BPM"><button id="bUp" aria-label="BPM +1">+</button><button id="tapT" data-i18n-title="tapTempo">TAP</button></span>
   <span class="sp"></span>
   <canvas id="meter" width="140" height="28" aria-hidden="true"></canvas>
   <button id="undo" data-i18n-title="undo" aria-label="Deshacer">↶</button>
   <button id="redo" data-i18n-title="redo" aria-label="Rehacer">↷</button>
+  <button id="bmode"></button>
   <button id="bpat" data-i18n="patterns">Patrones</button>
   <button id="bwav">WAV</button>
+  <button id="bhelp" data-i18n-title="help" aria-label="Ayuda">?</button>
   <button id="blang">EN</button>
 </header>
 <nav id="chips" aria-label="Pistas"></nav>
 <main>
+  <div id="views" class="seg">
+    <button data-view="one" data-i18n="vOne">1 pista</button>
+    <button data-view="all" data-i18n="vAll">Todas</button>
+    <button data-view="pads" data-i18n="vPads">Tocar</button>
+  </div>
   <section id="grid"></section>
-  <section id="lanebox">
+  <section id="live">
+    <div class="modes"><button id="rec" data-i18n="rec">● Grabar</button></div>
+    <div id="lpads"></div>
+    <p class="hint" data-i18n="liveHint"></p>
+  </section>
+  <section id="lanebox" class="adv">
     <div class="modes">
       <span class="lbl" data-i18n="tap">Toque:</span>
       <button id="mNote" data-i18n="note">Nota</button>
@@ -133,25 +181,29 @@ select{max-width:100%}
     <div id="lane"></div>
   </section>
   <div id="tabs">
-    <button data-tab="0" data-i18n="track">Pista</button>
+    <button data-tab="0" data-i18n="sounds">Sonidos</button>
     <button data-tab="1" data-i18n="fx">Efectos</button>
     <button data-tab="2" data-i18n="assistant">Asistente</button>
   </div>
   <section id="panels">
     <div class="panel" id="pTrack"><h2 id="trTitle"></h2>
-      <div class="ctl"><span data-i18n="kit">Kit</span><select id="kit"><option value="808">808-style</option><option value="909">909-style</option></select><span></span></div>
+      <p class="hint simp" data-i18n="hTrack"></p>
+      <div class="presets" id="presets"></div>
+      <div class="ctl adv"><span data-i18n="kit">Kit</span><select id="kit"><option value="808">808-style</option><option value="909">909-style</option><option value="606">606-style</option><option value="707">707-style</option></select><span></span></div>
       <div id="trCtl"></div>
       <div class="btns"><button id="clr" data-i18n="clear">Vaciar pista</button><button id="sug" class="big" data-i18n="suggest">Sugerir</button></div>
     </div>
     <div class="panel" id="pFx"><h2 data-i18n="fxmaster">Efectos y master</h2>
       <div id="fxCtl"></div>
-      <div class="ctl"><span data-i18n="dlytime">Tiempo delay</span><select id="div"><option>1/16</option><option>1/8</option><option>3/16</option><option>1/4</option></select><span></span></div>
+      <div class="ctl adv"><span data-i18n="dlytime">Tiempo delay</span><select id="div"><option>1/16</option><option>1/8</option><option>3/16</option><option>1/4</option></select><span></span></div>
     </div>
     <div class="panel" id="pAsst"><h2 data-i18n="assistant">Asistente</h2>
-      <div class="ctl"><span data-i18n="style">Estilo</span><select id="style"></select><span></span></div>
+      <p class="hint simp" data-i18n="hAsst"></p>
+      <div class="styles" id="styles"></div>
       <div id="sdesc"></div>
       <div class="btns"><button id="gen" class="big" data-i18n="generate">Generar groove completo</button></div>
-      <div class="btns"><button id="sug2" data-i18n="suggestTrack">Sugerir esta pista</button><button id="snd" data-i18n="styleSound">Sonido del estilo</button></div>
+      <div class="btns"><button id="less" data-i18n="less">− Energía</button><button id="more" data-i18n="more">+ Energía</button></div>
+      <div class="btns"><button id="sug2" data-i18n="suggestTrack">Sugerir esta pista</button><button id="snd" class="adv" data-i18n="styleSound">Sonido del estilo</button></div>
     </div>
   </section>
 </main>
@@ -161,12 +213,12 @@ select{max-width:100%}
 <script>
 'use strict';
 /* =====================================================================
-   DR-11 v0.1.0 — caja de ritmos de techno en un solo archivo.
+   DR-11 v0.2.0 — caja de ritmos de techno en un solo archivo.
    Módulos: 1 Utilidades · 2 i18n · 3 Estilos · 4 Modelo de datos
             5 Historial (comandos) · 6 Motor de audio · 7 Scheduler
             8 Exportación WAV · 9 Asistente · 10 Almacenamiento · 11 UI
    ===================================================================== */
-const VERSION = '0.1.0';
+const VERSION = '0.2.0';
 
 /* ---------- 1. Utilidades ---------- */
 const $ = id => document.getElementById(id);
@@ -183,12 +235,20 @@ const I18N = {
     vol: 'Volumen', pan: 'Pan', tune: 'Afinación', decay: 'Decay', tone: 'Tono', rev: 'Envío reverb', dly: 'Envío delay', frev: 'Reverb', fdly: 'Delay', fb: 'Feedback', sc: 'Sidechain', master: 'Master',
     save: 'Guardar', load: 'Cargar', del: 'Borrar', close: 'Cerrar', name: 'Nombre del patrón', saved: 'Patrón guardado', loaded: 'Patrón cargado', none: 'Aún no hay patrones guardados.', confirmDel: '¿Borrar el patrón guardado?', overwrite: 'Ya existe un patrón con ese nombre. ¿Sobrescribirlo?', newPat: 'Patrón vacío',
     exportT: 'Exportar WAV', bars: 'Compases', exportB: 'Exportar', rendering: 'Renderizando…', exported: 'WAV exportado', exportErr: 'No se pudo exportar', storeErr: 'No se pudo guardar en este navegador', noAudio: 'Este navegador no soporta Web Audio',
+    tapTempo: 'Marcar el tempo con toques', vOne: '1 pista', vAll: 'Todas', vPads: 'Tocar', rec: '● Grabar', sounds: 'Sonidos', more: '+ Energía', less: '− Energía', simple: 'Simple', advanced: 'Avanzado', help: 'Ayuda', start: 'Empezar',
+    liveHint: 'Toca los pads para oír cada sonido. Con Grabar activado y la reproducción en marcha, lo que toques se escribe en el patrón.',
+    hAsst: 'Elige un estilo y pulsa Generar. Luego sube o baja la energía.', hTrack: 'Elige un sonido para esta pista: al tocarlo lo oyes.', noMore: 'Ya no hay más que añadir', noLess: 'Solo queda el bombo',
+    helpL: ['Pulsa ▶ para escuchar. En iPhone, quita antes el modo silencio.', 'En Asistente, elige un estilo y pulsa «Generar groove completo».', 'Con «+ Energía» y «− Energía» añades o quitas instrumentos.', 'Toca los cuadros de colores para poner o quitar golpes. En Sonidos cambias el sonido de cada pista.', 'En «Tocar» tienes 12 pads grandes para tocar con los dedos. El botón de modo cambia entre Simple y Avanzado.', 'Si algo no te gusta, ↶ lo deshace siempre.'],
     exportNote: 'WAV estéreo de 16 bits. Suena igual que la reproducción (misma mezcla y misma probabilidad).',
     tr: ['Bombo', 'Rumble', 'Caja', 'Tom grave', 'Tom medio', 'Tom agudo', 'Rimshot', 'Palmada', 'Hat cerrado', 'Hat abierto', 'Crash', 'Ride'] },
   en: { play: 'Play / stop', undo: 'Undo', redo: 'Redo', swing: 'Swing', patterns: 'Patterns', tap: 'Tap:', note: 'Note', accent: 'Accent', lane: 'Lane:', velocity: 'Velocity', prob: 'Prob.', track: 'Track', fx: 'Effects', assistant: 'Assistant', kit: 'Kit', clear: 'Clear track', suggest: 'Suggest', fxmaster: 'Effects & master', dlytime: 'Delay time', style: 'Style', generate: 'Generate full groove', suggestTrack: 'Suggest this track', styleSound: 'Style sound',
     vol: 'Volume', pan: 'Pan', tune: 'Tune', decay: 'Decay', tone: 'Tone', rev: 'Reverb send', dly: 'Delay send', frev: 'Reverb', fdly: 'Delay', fb: 'Feedback', sc: 'Sidechain', master: 'Master',
     save: 'Save', load: 'Load', del: 'Delete', close: 'Close', name: 'Pattern name', saved: 'Pattern saved', loaded: 'Pattern loaded', none: 'No saved patterns yet.', confirmDel: 'Delete the saved pattern?', overwrite: 'A pattern with that name already exists. Overwrite it?', newPat: 'Empty pattern',
     exportT: 'Export WAV', bars: 'Bars', exportB: 'Export', rendering: 'Rendering…', exported: 'WAV exported', exportErr: 'Export failed', storeErr: 'Could not save in this browser', noAudio: 'This browser does not support Web Audio',
+    tapTempo: 'Tap the tempo', vOne: '1 track', vAll: 'All', vPads: 'Play', rec: '● Record', sounds: 'Sounds', more: '+ Energy', less: '− Energy', simple: 'Simple', advanced: 'Advanced', help: 'Help', start: 'Start',
+    liveHint: 'Tap the pads to hear each sound. With Record on and playback running, what you play is written into the pattern.',
+    hAsst: 'Pick a style and press Generate. Then raise or lower the energy.', hTrack: 'Pick a sound for this track: tap to hear it.', noMore: 'Nothing more to add', noLess: 'Only the kick is left',
+    helpL: ['Press ▶ to listen. On iPhone, turn off silent mode first.', 'In Assistant, pick a style and press "Generate full groove".', 'Use "+ Energy" and "− Energy" to add or remove instruments.', 'Tap the coloured squares to add or remove hits. In Sounds you change the sound of each track.', '"Play" gives you 12 big pads to play with your fingers. The mode button switches between Simple and Advanced.', 'If you do not like something, ↶ always undoes it.'],
     exportNote: '16-bit stereo WAV. Sounds the same as playback (same mix and same probability).',
     tr: ['Kick', 'Rumble', 'Snare', 'Low tom', 'Mid tom', 'High tom', 'Rimshot', 'Clap', 'Closed hat', 'Open hat', 'Crash', 'Ride'] }
 };
@@ -413,6 +473,22 @@ const STYLES = [
 const DATA_V = 1;
 const TR = [['BD', '#ff5a4d'], ['RB', '#c95cff'], ['SD', '#ffb02e'], ['LT', '#ff7a00'], ['MT', '#ff9f40'], ['HT', '#ffc670'], ['RS', '#7ddc5a'], ['CP', '#ff5fa2'], ['CH', '#00d1ff'], ['OH', '#4d9cff'], ['CC', '#b6f24a'], ['RC', '#5ce0c0']].map(([id, c]) => ({ id, c }));
 const NT = TR.length, NS = 16, iBD = 0, iCH = 8, iOH = 9;
+// Kits: cada uno parte de un motor base (808 o 909) con afinación, decay y brillo propios
+const KITS = { '808': { b: '808', tu: 0, dc: 1, tb: 1 }, '909': { b: '909', tu: 0, dc: 1, tb: 1 }, '606': { b: '808', tu: 3, dc: 0.6, tb: 1.3 }, '707': { b: '909', tu: 2, dc: 0.75, tb: 0.85 } };
+// Presets de sonido por pista: [nombre ES, nombre EN, kit, afinación, decay, tono]
+const P_TOM = [['808 redondo', '808 round', '808', 0, 0.5, 0.3], ['909 con pegada', '909 punchy', '909', 0, 0.5, 0.7], ['Largo', 'Long', '808', -2, 0.85, 0.4], ['Corto', 'Short', '909', 2, 0.25, 0.5], ['Grave', 'Deep', '808', -6, 0.6, 0.3], ['Agudo', 'High', '909', 5, 0.4, 0.6], ['606 seco', '606 dry', '606', 0, 0.5, 0.5], ['707 duro', '707 hard', '707', 0, 0.5, 0.8]];
+const P_HAT = [['909 clásico', '909 classic', '909', 0, 0.5, 0.5], ['808 clásico', '808 classic', '808', 0, 0.5, 0.5], ['Corto', 'Short', '909', 2, 0.2, 0.6], ['Largo', 'Long', '909', 0, 0.8, 0.5], ['Oscuro', 'Dark', '808', -4, 0.5, 0.25], ['606 fino', '606 thin', '606', 2, 0.5, 0.7], ['707 crujiente', '707 crisp', '707', 0, 0.5, 0.6], ['Brillante', 'Bright', '909', 4, 0.45, 0.9]];
+const PRESETS = {
+  BD: [['909 seco', '909 dry', '909', 0, 0.35, 0.5], ['808 largo', '808 long', '808', 0, 0.7, 0.3], ['Duro', 'Hard', '909', -2, 0.5, 0.9], ['Sub profundo', 'Deep sub', '808', -5, 0.8, 0.1], ['707 con pegada', '707 punchy', '707', 0, 0.5, 0.6], ['606 corto', '606 short', '606', 0, 0.45, 0.5], ['Boom grave', 'Low boom', '808', -8, 0.9, 0.2], ['Clic', 'Clicky', '909', 3, 0.25, 1]],
+  RB: [['Oscuro', 'Dark', '909', -2, 0.75, 0.3], ['Corto', 'Short', '909', 0, 0.35, 0.4], ['Largo', 'Long', '808', -4, 0.95, 0.25], ['Abierto', 'Open', '909', 0, 0.6, 0.8], ['Sub', 'Sub', '808', -7, 0.7, 0.1], ['Tenso', 'Tense', '707', 1, 0.6, 0.6]],
+  SD: [['909 clásica', '909 classic', '909', 0, 0.5, 0.5], ['808 seca', '808 dry', '808', 0, 0.4, 0.5], ['Brillante', 'Bright', '909', 2, 0.45, 0.85], ['Grave', 'Deep', '909', -5, 0.6, 0.4], ['606 corta', '606 short', '606', 0, 0.45, 0.6], ['Ruido largo', 'Long noise', '808', -2, 0.9, 0.9], ['707 dura', '707 hard', '707', 0, 0.5, 0.6], ['Apagada', 'Muted', '808', -3, 0.3, 0.15]],
+  LT: P_TOM, MT: P_TOM, HT: P_TOM,
+  RS: [['808 clave', '808 clave', '808', 0, 0.5, 0.5], ['909 aro', '909 rim', '909', 0, 0.5, 0.5], ['Madera', 'Wood', '808', -5, 0.7, 0.3], ['Clic', 'Click', '909', 6, 0.2, 0.8], ['707 metálico', '707 metallic', '707', 3, 0.7, 0.9], ['606 corto', '606 short', '606', 0, 0.5, 0.5]],
+  CP: [['909 clásica', '909 classic', '909', 0, 0.5, 0.5], ['808 clásica', '808 classic', '808', 0, 0.5, 0.5], ['Larga', 'Long', '909', 0, 0.9, 0.5], ['Seca', 'Dry', '909', 2, 0.2, 0.6], ['Oscura', 'Dark', '808', -4, 0.6, 0.25], ['Brillante', 'Bright', '909', 4, 0.5, 0.9], ['707 corta', '707 short', '707', 0, 0.5, 0.5], ['606 fina', '606 thin', '606', 0, 0.5, 0.6]],
+  CH: P_HAT, OH: P_HAT,
+  CC: [['909 clásico', '909 classic', '909', 0, 0.5, 0.5], ['808 clásico', '808 classic', '808', 0, 0.5, 0.5], ['Corto', 'Short', '909', 0, 0.2, 0.5], ['Largo', 'Long', '909', -2, 0.85, 0.5], ['Oscuro', 'Dark', '808', -5, 0.6, 0.25], ['Brillante', 'Bright', '707', 3, 0.6, 0.9]],
+  RC: [['909 clásico', '909 classic', '909', 0, 0.5, 0.5], ['808 clásico', '808 classic', '808', 0, 0.5, 0.5], ['Ping corto', 'Short ping', '909', 2, 0.2, 0.6], ['Largo', 'Long', '909', 0, 0.85, 0.5], ['Oscuro', 'Dark', '808', -4, 0.5, 0.25], ['606 fino', '606 thin', '606', 2, 0.5, 0.8]]
+};
 const DIVS = { '1/16': 0.25, '1/8': 0.5, '3/16': 0.75, '1/4': 1 };
 const newStep = () => ({ on: false, vel: 0.8, acc: false, prob: 100 });
 const newTrack = () => ({ kit: '909', vol: 0.8, pan: 0, tune: 0, decay: 0.5, tone: 0.5, rev: 0, dly: 0, mute: false, solo: false, steps: Array.from({ length: NS }, newStep) });
@@ -429,7 +505,7 @@ function migrate(d) {
   base.fx = { rev: n(f.rev, 0.3, 0, 1), dly: n(f.dly, 0.25, 0, 1), fb: n(f.fb, 0.35, 0, 0.8), div: DIVS[f.div] ? f.div : '3/16', sc: n(f.sc, 0.5, 0, 1), master: n(f.master, 0.8, 0, 1) };
   (Array.isArray(d.tracks) ? d.tracks : []).slice(0, NT).forEach((s, i) => {
     if (!s) return; const tr = base.tracks[i];
-    tr.kit = s.kit === '808' ? '808' : '909'; tr.vol = n(s.vol, 0.8, 0, 1); tr.pan = n(s.pan, 0, -1, 1); tr.tune = Math.round(n(s.tune, 0, -12, 12));
+    tr.kit = KITS[s.kit] ? String(s.kit) : '909'; tr.vol = n(s.vol, 0.8, 0, 1); tr.pan = n(s.pan, 0, -1, 1); tr.tune = Math.round(n(s.tune, 0, -12, 12));
     tr.decay = n(s.decay, 0.5, 0, 1); tr.tone = n(s.tone, 0.5, 0, 1); tr.rev = n(s.rev, 0, 0, 1); tr.dly = n(s.dly, 0, 0, 1); tr.mute = !!s.mute; tr.solo = !!s.solo;
     (Array.isArray(s.steps) ? s.steps : []).slice(0, NS).forEach((p, j) => { if (p) tr.steps[j] = { on: !!p.on, vel: n(p.vel, 0.8, 0.05, 1), acc: !!p.acc, prob: Math.round(n(p.prob, 100, 5, 100)) }; });
   });
@@ -461,7 +537,7 @@ function buildGraph(c, getS) {
   const mkBuf = (ch, secs, fn) => { const b = c.createBuffer(ch, Math.floor(sr * secs), sr); for (let k = 0; k < ch; k++) fn(b.getChannelData(k), k); return b; };
   G.noise = mkBuf(1, 2, d => { const r = prng(11); for (let i = 0; i < d.length; i++) d[i] = r() * 2 - 1; });
   const metal = (freqs, nz, seed) => mkBuf(1, 2, d => { const r = prng(seed); for (let i = 0; i < d.length; i++) { let s = 0; for (const f of freqs) s += ((i * f / sr) % 1) < 0.5 ? 1 : -1; d[i] = s / freqs.length * (1 - nz) + (r() * 2 - 1) * nz; } });
-  G.metal = { '808': metal([205.3, 304.4, 369.6, 522.7, 540, 800], 0, 5), '909': metal([263, 400, 421, 474, 587, 845].map(f => f * 1.38), 0.45, 7) };
+  G.metal = { '808': metal([205.3, 304.4, 369.6, 522.7, 540, 800], 0, 5), '909': metal([263, 400, 421, 474, 587, 845].map(f => f * 1.38), 0.45, 7), '606': metal([245, 306, 365, 415, 437, 619].map(f => f * 1.25), 0.12, 9), '707': metal([263, 400, 421, 474, 587, 845].map(f => f * 1.2), 0.62, 13) };
   const curve = fn => { const a = new Float32Array(2049); for (let i = 0; i < 2049; i++) a[i] = fn(i / 1024 - 1); return a; };
   G.drive = curve(x => Math.tanh(2.5 * x) / Math.tanh(2.5));
   // Master: ganancia → limitador (compresor rápido) → recorte suave → salida
@@ -509,7 +585,7 @@ function buildGraph(c, getS) {
   };
   const hat = (d8, d9, lvl, hp8, hp9, off) => (o, t, a, p) => {
     const k9 = p.kit === '909', dec = (k9 ? d9 : d8) * p.dm;
-    chain(buf(G.metal[p.kit], t, dec, off, p.r), flt('highpass', (k9 ? hp9 : hp8) * p.tb, 0.8), amp(t, a * lvl * (k9 ? 1 : 2), 0.001, dec), o);
+    chain(buf(G.metal[p.mk], t, dec, off, p.r), flt('highpass', (k9 ? hp9 : hp8) * p.tb, 0.8), amp(t, a * lvl * (k9 ? 1 : 2), 0.001, dec), o);
   };
   const V = [
     /* BD */ (o, t, a, p) => {
@@ -547,20 +623,20 @@ function buildGraph(c, getS) {
     /* OH */ hat(0.32, 0.4, 1.1, 6500, 7800, 0.37),
     /* CC */ (o, t, a, p) => {
       const k9 = p.kit === '909', dec = (k9 ? 1.3 : 1.0) * p.dm;
-      chain(buf(G.metal[p.kit], t, dec, 0.61, p.r * 0.92), flt('highpass', 3800 * p.tb, 0.7), amp(t, a * 0.6, 0.002, dec), o);
+      chain(buf(G.metal[p.mk], t, dec, 0.61, p.r * 0.92), flt('highpass', 3800 * p.tb, 0.7), amp(t, a * 0.6, 0.002, dec), o);
       chain(buf(G.noise, t, dec * 0.6, 1.1), flt('highpass', 6000 * p.tb), amp(t, a * 0.3, 0.002, dec * 0.6), o);
     },
     /* RC */ (o, t, a, p) => {
       const k9 = p.kit === '909', dec = (k9 ? 0.7 : 0.55) * p.dm;
-      chain(buf(G.metal[p.kit], t, dec, 0.83, p.r * 1.07), flt('bandpass', (k9 ? 8200 : 6800) * p.tb, 1.6), flt('highpass', 5000), amp(t, a * 1.9, 0.001, dec), o);
+      chain(buf(G.metal[p.mk], t, dec, 0.83, p.r * 1.07), flt('bandpass', (k9 ? 8200 : 6800) * p.tb, 1.6), flt('highpass', 5000), amp(t, a * 1.9, 0.001, dec), o);
     }
   ];
   // Dispara una pista en el instante t leyendo sus parámetros actuales
   G.trigger = (i, t, vel, acc) => {
-    const s = getS(), x = s.tracks[i];
+    const s = getS(), x = s.tracks[i], K = KITS[x.kit] || KITS['909'];
     let o = G.tr[i].g;
     if (i === iOH) { const ch = c.createGain(); ch.connect(o); G.lastOH = ch; o = ch; } // nodo propio para el choke
-    V[i](o, t, vel * (acc ? 1.3 : 1) * 0.7, { kit: x.kit, r: Math.pow(2, x.tune / 12), dm: Math.pow(3, x.decay * 2 - 1), tone: x.tone, tb: Math.pow(2, (x.tone - 0.5) * 2) });
+    V[i](o, t, vel * (acc ? 1.3 : 1) * 0.7, { kit: K.b, mk: x.kit, r: Math.pow(2, (x.tune + K.tu) / 12), dm: Math.pow(3, x.decay * 2 - 1) * K.dc, tone: x.tone, tb: Math.pow(2, (x.tone - 0.5) * 2) * K.tb });
     if (i === iBD && s.fx.sc > 0 && audible(s, i)) { duck.gain.setTargetAtTime(1 - s.fx.sc * 0.9, t, 0.004); duck.gain.setTargetAtTime(1, t + 0.045, 0.07); }
   };
   // Programa un paso completo: usada tal cual por el scheduler y por el render offline
@@ -658,28 +734,68 @@ function generate(first) {
   });
 }
 
+// Energía: añade o quita instrumentos en un orden musical (bombo → hats → palmada → rumble → ...)
+const ENERGY = [0, 8, 7, 1, 9, 6, 2, 11, 3, 4, 5, 10];
+const isEmpty = i => !S.tracks[i].steps.some(p => p.on);
+const hitsIn = str => (str.match(/[^-]/g) || []).length;
+function energy(up) {
+  const st = curStyle(), b = JSON.stringify(S);
+  cmd(() => {
+    if (up) {
+      const i = ENERGY.find(k => isEmpty(k) && (st.pat[TR[k].id] || []).some(hitsIn));
+      if (i != null) { S.tracks[i].steps = parsePat(st.pat[TR[i].id].find(hitsIn)); S.tracks[i].mute = false; return; }
+      for (const k of [8, 6, 9, 3, 4, 5, 11]) { // todo suena ya: densifica una pista
+        const v = (st.pat[TR[k].id] || []).slice().sort((x, y) => hitsIn(y) - hitsIn(x))[0];
+        if (v && hitsIn(v) > hitsIn(patStr(S.tracks[k].steps))) { S.tracks[k].steps = parsePat(v); return; }
+      }
+    } else {
+      const i = ENERGY.slice().reverse().find(k => k !== iBD && !isEmpty(k));
+      if (i != null) S.tracks[i].steps = Array.from({ length: NS }, newStep);
+    }
+  });
+  if (JSON.stringify(S) === b) toast(t(up ? 'noMore' : 'noLess'));
+}
+function applyPreset(i, k) { const p = PRESETS[TR[i].id][k]; cmd(() => { const x = S.tracks[i]; x.kit = p[2]; x.tune = p[3]; x.decay = p[4]; x.tone = p[5]; }); audition(i); }
+// Tap tempo: media de los últimos toques
+const taps = [];
+function tapTempo() { const n = performance.now(); if (taps.length && n - taps[taps.length - 1] > 2000) taps.length = 0; taps.push(n); if (taps.length > 5) taps.shift(); if (taps.length >= 2) { const d = (taps[taps.length - 1] - taps[0]) / (taps.length - 1); cmd(() => { S.bpm = clamp(Math.round(60000 / d), 60, 200); }); } }
+// Pad en directo: suena al instante y, con Grabar activo, se escribe en el paso más cercano (cuantizado)
+function hitPad(i) {
+  if (!ensureCtx()) return;
+  ui.sel = i;
+  if (!(ui.rec && seq.playing && seq.q.length && ctx.state === 'running')) { audition(i); refresh(); return; }
+  const now = ctx.currentTime, last = seq.q[seq.q.length - 1], next = { st: (last.st + 1) % NS, t: last.t + stepDur(S), un: true };
+  let best = next; for (const e of seq.q) if (Math.abs(e.t - now) < Math.abs(best.t - now)) best = e;
+  const was = S.tracks[i].steps[best.st].on;
+  if (!best.un && !(was && best.t > now)) G.trigger(i, now + 0.005, 0.8, false); // si el paso aún no está programado, lo tocará el scheduler
+  cmd(() => { S.tracks[i].steps[best.st].on = true; });
+}
+
 /* ---------- 10. Almacenamiento (localStorage, versionado, siempre en try/catch) ---------- */
 const KEY = 'dr11';
-let store = { v: DATA_V, lang: 'es', cur: null, pats: Object.create(null) };
+let store = { v: DATA_V, lang: 'es', cur: null, pats: Object.create(null), simple: true, seen: false, view: 'one' };
 function loadStore() {
-  try { const d = JSON.parse(localStorage.getItem(KEY)); if (d && typeof d === 'object') { store.lang = d.lang === 'en' ? 'en' : 'es'; store.cur = d.cur || null; if (d.pats && typeof d.pats === 'object') for (const k of Object.keys(d.pats)) store.pats[k] = d.pats[k]; } } catch (e) { /* sin datos o bloqueado */ }
+  try { const d = JSON.parse(localStorage.getItem(KEY)); if (d && typeof d === 'object') { store.lang = d.lang === 'en' ? 'en' : 'es'; store.cur = d.cur || null; store.simple = d.simple !== false; store.seen = !!d.seen; if (['one', 'all', 'pads'].includes(d.view)) store.view = d.view; if (d.pats && typeof d.pats === 'object') for (const k of Object.keys(d.pats)) store.pats[k] = d.pats[k]; } } catch (e) { /* sin datos o bloqueado */ }
 }
 let saveT = 0, saveWarned = false;
-function saveStore() { try { store.cur = S; store.lang = lang; localStorage.setItem(KEY, JSON.stringify(store)); return true; } catch (e) { if (!saveWarned) { saveWarned = true; toast(t('storeErr')); } return false; } }
+function saveStore() { try { store.cur = S; store.lang = lang; store.simple = ui.simple; store.view = ui.view; localStorage.setItem(KEY, JSON.stringify(store)); return true; } catch (e) { if (!saveWarned) { saveWarned = true; toast(t('storeErr')); } return false; } }
 const saveSoon = () => { clearTimeout(saveT); saveT = setTimeout(saveStore, 400); };
 
 /* ---------- 11. Interfaz ---------- */
-const ui = { sel: 0, mode: 'note', lane: 'vel', tab: 0, pads: [], rows: [], chips: [], laneEls: [], sliders: [], cur: -1 };
+const ui = { sel: 0, mode: 'note', lane: 'vel', tab: 2, simple: true, view: 'one', rec: false, pKey: '', pads: [], rows: [], chips: [], laneEls: [], sliders: [], lpads: [], styleBtns: [], presetBtns: [], cur: -1 };
+const isMobile = () => window.matchMedia('(max-width:820px)').matches;
 let toastT = 0;
 function toast(msg, sticky) { const e = $('toast'); e.textContent = msg; e.style.display = 'block'; clearTimeout(toastT); if (!sticky) toastT = setTimeout(() => (e.style.display = 'none'), 2200); }
 // Tras cualquier cambio de estado: audio, pantalla y guardado
 function live() { if (G) G.sync(); refresh(); saveSoon(); }
 
-function slider(parent, key, min, max, step, get, set) {
-  const row = el('label', 'ctl'), lab = el('span'), inp = el('input'), out = el('output');
+function slider(parent, key, min, max, step, get, set, def, adv) {
+  const row = el('label', adv ? 'ctl adv' : 'ctl'), lab = el('span'), inp = el('input'), out = el('output');
   inp.type = 'range'; inp.min = min; inp.max = max; inp.step = step;
   inp.addEventListener('input', () => { gestBegin(); set(+inp.value); if (G) G.sync(); out.textContent = fmt(+inp.value, step); saveSoon(); });
   inp.addEventListener('change', gestEnd);
+  let lastTap = 0; // doble toque: vuelve al valor por defecto
+  inp.addEventListener('pointerdown', () => { const n = Date.now(); if (n - lastTap < 350) setTimeout(() => cmd(() => set(def)), 60); lastTap = n; });
   row.append(lab, inp, out); parent.append(row);
   ui.sliders.push({ key, lab, inp, out, get, step });
 }
@@ -691,7 +807,9 @@ function buildUI() {
     const chip = el('button', '', tr.id); chip.style.setProperty('--c', tr.c); chip.onclick = () => select(i); chips.append(chip); ui.chips.push(chip);
     const row = el('div', 'row'), head = el('div', 'head'), nm = el('button', 'nm'), m = el('button', 'ms m', 'M'), s = el('button', 'ms s', 'S'), pads = el('div', 'pads');
     row.style.setProperty('--c', tr.c);
+    nm.append(el('b', '', tr.id), el('span'));
     nm.onclick = () => { select(i); audition(i); };
+    row.addEventListener('click', () => { if (ui.view === 'all' && isMobile()) { ui.sel = i; ui.view = 'one'; refresh(); } });
     m.onclick = () => cmd(() => { S.tracks[i].mute = !S.tracks[i].mute; });
     s.onclick = () => cmd(() => { S.tracks[i].solo = !S.tracks[i].solo; });
     head.append(nm, m, s); row.append(head, pads); grid.append(row);
@@ -713,10 +831,10 @@ function buildUI() {
   lane.addEventListener('pointerup', up); lane.addEventListener('pointercancel', up);
   // Faders de pista y de efectos
   const tc = $('trCtl'), cur = () => S.tracks[ui.sel];
-  [['vol', 0, 1, 0.01], ['pan', -1, 1, 0.01], ['tune', -12, 12, 1], ['decay', 0, 1, 0.01], ['tone', 0, 1, 0.01], ['rev', 0, 1, 0.01], ['dly', 0, 1, 0.01]].forEach(([k, a, b, st]) => slider(tc, k, a, b, st, () => cur()[k], v => { cur()[k] = v; }));
+  [['vol', 0, 1, 0.01, 0.8], ['pan', -1, 1, 0.01, 0], ['tune', -12, 12, 1, 0], ['decay', 0, 1, 0.01, 0.5], ['tone', 0, 1, 0.01, 0.5], ['rev', 0, 1, 0.01, 0], ['dly', 0, 1, 0.01, 0]].forEach(([k, a, b, st, df]) => slider(tc, k, a, b, st, () => cur()[k], v => { cur()[k] = v; }, df, k !== 'vol'));
   const fc = $('fxCtl');
-  [['frev', 'rev', 1], ['fdly', 'dly', 1], ['fb', 'fb', 0.8], ['sc', 'sc', 1], ['master', 'master', 1]].forEach(([lk, k, mx]) => slider(fc, lk, 0, mx, 0.01, () => S.fx[k], v => { S.fx[k] = v; }));
-  $('swing').addEventListener('input', e => { gestBegin(); S.swing = +e.target.value; saveSoon(); }); $('swing').addEventListener('change', gestEnd);
+  [['master', 'master', 1, 0.8, 0], ['frev', 'rev', 1, 0.3, 0], ['fdly', 'dly', 1, 0.25, 0], ['fb', 'fb', 0.8, 0.35, 1], ['sc', 'sc', 1, 0.5, 1]].forEach(([lk, k, mx, df, adv]) => slider(fc, lk, 0, mx, 0.01, () => S.fx[k], v => { S.fx[k] = v; }, df, adv));
+  slider(fc, 'swing', 0, 0.6, 0.01, () => S.swing, v => { S.swing = v; }, 0, true);
   // Controles simples
   $('play').onclick = () => (seq.playing ? stop() : play());
   $('bpm').addEventListener('change', e => { cmd(() => { S.bpm = clamp(Math.round(+e.target.value) || S.bpm, 60, 200); }); e.target.value = S.bpm; });
@@ -727,8 +845,16 @@ function buildUI() {
   $('sug').onclick = $('sug2').onclick = () => suggest(ui.sel);
   $('snd').onclick = () => styleSound(ui.sel);
   $('gen').onclick = () => generate(false);
-  STYLES.forEach(s => { const o = el('option'); o.value = s.id; $('style').append(o); });
-  $('style').onchange = e => cmd(() => { S.style = e.target.value; });
+  STYLES.forEach(s => { const b = el('button'); b.onclick = () => cmd(() => { S.style = s.id; }); $('styles').append(b); ui.styleBtns.push(b); });
+  // Vistas, pads en directo, modo y ayudas
+  document.querySelectorAll('#views button').forEach(b => (b.onclick = () => { ui.view = b.dataset.view; refresh(); saveSoon(); }));
+  TR.forEach((tr, i) => { const b = el('button'); b.style.setProperty('--c', tr.c); b.addEventListener('pointerdown', e => { e.preventDefault(); hitPad(i); b.classList.add('hit'); setTimeout(() => b.classList.remove('hit'), 110); }); b.addEventListener('keydown', e => { if (e.key === 'Enter') hitPad(i); }); $('lpads').append(b); ui.lpads.push(b); });
+  $('rec').onclick = () => { ui.rec = !ui.rec; refresh(); };
+  $('bmode').onclick = () => { ui.simple = !ui.simple; if (ui.simple) ui.mode = 'note'; refresh(); saveSoon(); };
+  $('bhelp').onclick = helpDialog;
+  $('bDn').onclick = () => cmd(() => { S.bpm = clamp(S.bpm - 1, 60, 200); }); $('bUp').onclick = () => cmd(() => { S.bpm = clamp(S.bpm + 1, 60, 200); });
+  $('tapT').onclick = tapTempo;
+  $('more').onclick = () => energy(true); $('less').onclick = () => energy(false);
   $('mNote').onclick = () => { ui.mode = 'note'; refresh(); }; $('mAcc').onclick = () => { ui.mode = 'acc'; refresh(); };
   $('lVel').onclick = () => { ui.lane = 'vel'; refresh(); }; $('lProb').onclick = () => { ui.lane = 'prob'; refresh(); };
   document.querySelectorAll('#tabs button').forEach(b => (b.onclick = () => { ui.tab = +b.dataset.tab; refresh(); }));
@@ -755,13 +881,15 @@ function tapPad(i, j) {
 // Pinta todo el estado en la interfaz sin recrear el DOM
 function refresh() {
   document.documentElement.lang = lang;
+  document.body.className = (ui.simple ? 'simple ' : '') + 'v-' + ui.view;
   document.querySelectorAll('[data-i18n]').forEach(e => (e.textContent = t(e.dataset.i18n)));
   document.querySelectorAll('[data-i18n-title]').forEach(e => { e.title = t(e.dataset.i18nTitle); e.setAttribute('aria-label', e.title); });
   $('blang').textContent = lang === 'es' ? 'EN' : 'ES';
   const anySolo = S.tracks.some(x => x.solo);
   S.tracks.forEach((x, i) => {
     const r = ui.rows[i];
-    r.row.classList.toggle('sel', i === ui.sel); r.nm.textContent = TR[i].id + ' · ' + t('tr')[i];
+    r.row.classList.toggle('sel', i === ui.sel); r.nm.lastChild.textContent = ' · ' + t('tr')[i];
+    ui.lpads[i].textContent = TR[i].id + '\n' + t('tr')[i]; ui.lpads[i].classList.toggle('sel', i === ui.sel);
     r.m.classList.toggle('on', x.mute); r.s.classList.toggle('on', x.solo);
     ui.chips[i].classList.toggle('sel', i === ui.sel); ui.chips[i].classList.toggle('muted', x.mute || (anySolo && !x.solo));
     x.steps.forEach((p, j) => { const e = ui.pads[i][j]; e.classList.toggle('on', p.on); e.classList.toggle('acc', p.on && p.acc); e.classList.toggle('prob', p.on && p.prob < 100); e.style.setProperty('--v', p.on ? 0.35 + p.vel * 0.65 : 1); e.setAttribute('aria-pressed', p.on); });
@@ -773,14 +901,20 @@ function refresh() {
   $('kit').value = x.kit; $('div').value = S.fx.div;
   ui.sliders.forEach(s => { s.lab.textContent = t(s.key); const v = s.get(); if (document.activeElement !== s.inp || gest == null) s.inp.value = v; s.out.textContent = fmt(v, s.step); });
   if (document.activeElement !== $('bpm')) $('bpm').value = S.bpm;
-  $('swing').value = S.swing;
   $('play').textContent = seq.playing ? '■' : '▶'; $('play').classList.toggle('on', seq.playing);
   $('undo').disabled = !H.u.length && gest == null; $('redo').disabled = !H.r.length;
   $('mNote').classList.toggle('on', ui.mode === 'note'); $('mAcc').classList.toggle('on', ui.mode === 'acc');
   $('lVel').classList.toggle('on', ui.lane === 'vel'); $('lProb').classList.toggle('on', ui.lane === 'prob');
   document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', +b.dataset.tab === ui.tab));
   ['pTrack', 'pFx', 'pAsst'].forEach((id, k) => $(id).classList.toggle('show', k === ui.tab));
-  const st = curStyle(); $('style').value = st.id; [...$('style').options].forEach((o, k) => (o.textContent = STYLES[k].name[lang] + ' · ' + STYLES[k].bpm)); $('sdesc').textContent = st.desc[lang];
+  const st = curStyle(); ui.styleBtns.forEach((b, k) => { b.textContent = STYLES[k].name[lang] + ' · ' + STYLES[k].bpm; b.classList.toggle('on', STYLES[k] === st); b.setAttribute('aria-pressed', STYLES[k] === st); }); $('sdesc').textContent = st.desc[lang];
+  // Presets de la pista seleccionada (se reconstruyen solo al cambiar de pista o de idioma)
+  const pr = PRESETS[TR[ui.sel].id], box = $('presets');
+  if (ui.pKey !== ui.sel + lang) { ui.pKey = ui.sel + lang; box.textContent = ''; box.style.setProperty('--c', TR[ui.sel].c); ui.presetBtns = pr.map((p, k) => { const b = el('button', '', p[lang === 'es' ? 0 : 1]); b.onclick = () => applyPreset(ui.sel, k); box.append(b); return b; }); }
+  pr.forEach((p, k) => ui.presetBtns[k].classList.toggle('on', x.kit === p[2] && x.tune === p[3] && x.decay === p[4] && x.tone === p[5]));
+  document.querySelectorAll('#views button').forEach(b => b.classList.toggle('on', b.dataset.view === ui.view || (b.dataset.view === 'all' && ui.view === 'one' && !isMobile())));
+  $('rec').classList.toggle('on', ui.rec); $('rec').setAttribute('aria-pressed', ui.rec);
+  $('bmode').textContent = t(ui.simple ? 'simple' : 'advanced');
 }
 // Bucle de dibujo: paso actual iluminado (sincronizado con el reloj de audio) y medidor de pico
 let mBuf = null, clipHold = 0;
@@ -818,6 +952,11 @@ function patternsDialog() {
   nw.onclick = () => { cmd(() => { const st = S.style; S = newState(); S.style = st; }); closeModal(); };
   r.append(nw); b.append(r); closeBtn(b);
 }
+function helpDialog() {
+  const b = openModal('DR-11 · ' + t('help')), ol = el('ol'), r = el('div', 'btns'), c = el('button', 'big', t('start'));
+  t('helpL').forEach(x => ol.append(el('li', '', x)));
+  c.onclick = closeModal; r.append(c); b.append(ol, r);
+}
 function exportDialog() {
   const b = openModal(t('exportT')), row = el('div', 'li'), sel = el('select'), go = el('button', 'big', t('exportB'));
   [1, 2, 4, 8, 16].forEach(n => { const o = el('option', '', n); o.value = n; if (n === 4) o.selected = true; sel.append(o); });
@@ -827,13 +966,15 @@ function exportDialog() {
 }
 
 /* ---------- Arranque ---------- */
-loadStore(); lang = store.lang;
+loadStore(); lang = store.lang; ui.simple = store.simple; ui.view = store.view; ui.tab = ui.simple ? 2 : 0;
 S = store.cur ? migrate(store.cur) : newState();
 buildUI();
 if (!store.cur) { generate(true); H.u.length = 0; } // primer arranque: groove base del estilo, listo para sonar
 refresh();
+window.addEventListener('resize', refresh);
+if (!store.seen) { store.seen = true; helpDialog(); saveSoon(); } // ayuda breve la primera vez
 // Gancho para pruebas automáticas (no afecta al uso normal)
-window.DR11 = { VERSION, get S() { return S; }, seq, renderOffline, wavBlob, migrate, undo, redo, STYLES };
+window.DR11 = { VERSION, get S() { return S; }, seq, ui, energy, hitPad, PRESETS, renderOffline, wavBlob, migrate, undo, redo, STYLES };
 </script>
 </body>
 </html>

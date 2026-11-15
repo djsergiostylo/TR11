@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1e1e1e">
+<title>DR-11 · Techno Drum Machine</title>
+<style>
+/* ===== DR-11 · estilos ===== */
+:root{--bg:#1e1e1e;--panel:#2a2a2a;--line:#3a3a3a;--txt:#e6e6e6;--dim:#8d8d8d;--acc:#00d1ff;--warn:#ff4d4d}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--txt);font:14px/1.3 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+body{padding:0 env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);user-select:none;-webkit-user-select:none}
+button,select,input{font:inherit;color:inherit}
+button,select{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:0 10px;min-height:40px;cursor:pointer;touch-action:manipulation}
+button:active{filter:brightness(1.4)}
+button.on{background:var(--acc);color:#000;border-color:var(--acc)}
+button:disabled{opacity:.35;cursor:default}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--acc);outline-offset:1px}
+input[type=range]{accent-color:var(--acc);width:100%;height:32px;margin:0;touch-action:pan-y}
+input[type=number],input[type=text]{background:#161616;border:1px solid var(--line);border-radius:6px;min-height:40px;padding:0 8px;width:72px;user-select:text;-webkit-user-select:text}
+header{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:8px}
+.brand{font-weight:800;letter-spacing:2px;color:var(--acc);font-size:18px;margin-right:4px}
+#play{min-width:56px;font-size:18px}
+.fld{display:flex;align-items:center;gap:6px;color:var(--dim);font-size:12px}
+.fld input[type=range]{width:90px}
+.sp{flex:1}
+#meter{width:70px;height:14px;background:#111;border:1px solid var(--line);border-radius:3px}
+main{padding:8px;max-width:1280px;margin:0 auto}
+/* chips de pista (móvil) */
+#chips{display:none;gap:6px;overflow-x:auto;padding:8px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+#chips::-webkit-scrollbar{display:none}
+#chips button{flex:0 0 auto;min-width:52px;font-weight:700;border-bottom:3px solid var(--c)}
+#chips button.sel{background:var(--c);color:#000}
+#chips button.muted{opacity:.4}
+/* rejilla */
+.row{display:flex;gap:6px;align-items:center;margin-bottom:4px;border-radius:6px;padding:2px}
+.row.sel{background:#262626;box-shadow:inset 3px 0 0 var(--c)}
+.head{display:flex;gap:4px;align-items:center;flex:0 0 200px;min-width:0}
+.head .nm{flex:1;min-width:0;text-align:left;border-left:4px solid var(--c);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-height:36px}
+.head .ms{min-width:34px;padding:0;min-height:36px;font-weight:700;font-size:12px}
+.ms.m.on{background:var(--warn);border-color:var(--warn);color:#000}
+.ms.s.on{background:#ffd400;border-color:#ffd400;color:#000}
+.pads{flex:1;display:grid;grid-template-columns:repeat(16,1fr);gap:3px}
+.pad{position:relative;min-height:36px;padding:0;border-radius:4px;background:#333;border:1px solid #444;overflow:hidden}
+.pad:nth-child(4n+1){background:#3d3d3d}
+.pad.on{background:var(--c);border-color:var(--c);opacity:var(--v,1)}
+.pad.acc::after{content:"";position:absolute;left:0;right:0;top:0;height:5px;background:#fff}
+.pad.prob::before{content:"%";position:absolute;right:2px;bottom:0;font-size:9px;color:#000;font-weight:700}
+.pad.cur{box-shadow:0 0 0 2px #fff inset;filter:brightness(1.5)}
+/* carril de velocity / probabilidad */
+#lanebox{background:var(--panel);border-radius:8px;padding:8px;margin:8px 0}
+.modes{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
+.modes .lbl{color:var(--dim);font-size:12px;margin-right:2px}
+.modes button{min-height:34px}
+#lane{display:grid;grid-template-columns:repeat(16,1fr);gap:3px;height:84px;touch-action:none;cursor:ns-resize}
+#lane div{background:#1b1b1b;border-radius:3px;position:relative;overflow:hidden}
+#lane i{position:absolute;left:0;right:0;bottom:0;background:#555}
+#lane .on i{background:var(--c)}
+/* paneles */
+#tabs{display:none;gap:6px;margin-bottom:8px}
+#tabs button{flex:1}
+#panels{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.panel{background:var(--panel);border-radius:8px;padding:10px}
+.panel h2{margin:0 0 8px;font-size:13px;text-transform:uppercase;letter-spacing:1px;color:var(--acc)}
+.ctl{display:grid;grid-template-columns:84px 1fr 40px;align-items:center;gap:6px;font-size:12px;color:var(--dim)}
+.ctl output{text-align:right;color:var(--txt);font-variant-numeric:tabular-nums}
+.btns{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.btns button{flex:1}
+.big{background:var(--acc);color:#000;border-color:var(--acc);font-weight:700}
+#sdesc{color:var(--dim);font-size:12px;min-height:32px;margin:6px 0}
+select{max-width:100%}
+/* modal */
+#modal{position:fixed;top:0;right:0;bottom:0;left:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:10;padding:12px}
+#modal.open{display:flex}
+#mbox{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;width:100%;max-width:420px;max-height:85vh;overflow:auto}
+#mbox h3{margin:0 0 10px;color:var(--acc)}
+#mbox .li{display:flex;gap:6px;align-items:center;margin:6px 0}
+#mbox .li span{flex:1;overflow:hidden;text-overflow:ellipsis}
+#mbox input[type=text]{flex:1;width:auto}
+#toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#000;border:1px solid var(--acc);padding:8px 14px;border-radius:20px;display:none;z-index:20;max-width:90vw}
+/* ===== móvil: una pista cada vez ===== */
+@media (max-width:820px){
+  #chips{display:flex}
+  .row{display:none}
+  .row.sel{display:block;background:none;box-shadow:none;padding:0}
+  .head{flex:none;margin-bottom:8px}
+  .head .ms{min-width:48px;min-height:40px}
+  .head .nm{min-height:40px}
+  .pads{grid-template-columns:repeat(8,1fr);gap:5px}
+  .pad{min-height:54px;border-radius:6px}
+  #lane{height:96px}
+  #tabs{display:flex}
+  #panels{display:block}
+  .panel{display:none}
+  .panel.show{display:block}
+  .fld.sw span{display:none}
+  .brand{font-size:16px}
+  input[type=number],input[type=text],select{font-size:16px} /* evita el zoom automático de iOS */
+  .modes button{min-height:40px}
+  #undo,#redo{min-width:40px}
+  header button{padding:0 8px}
+}
+</style>
+</head>
+<body>
+<header>
+  <span class="brand">DR-11</span>
+  <button id="play" data-i18n-title="play" aria-label="Play">▶</button>
+  <label class="fld">BPM <input id="bpm" type="number" min="60" max="200" step="1" inputmode="numeric"></label>
+  <label class="fld sw"><span data-i18n="swing">Swing</span> <input id="swing" type="range" min="0" max="0.6" step="0.01" aria-label="Swing"></label>
+  <span class="sp"></span>
+  <canvas id="meter" width="140" height="28" aria-hidden="true"></canvas>
+  <button id="undo" data-i18n-title="undo" aria-label="Deshacer">↶</button>
+  <button id="redo" data-i18n-title="redo" aria-label="Rehacer">↷</button>
+  <button id="bpat" data-i18n="patterns">Patrones</button>
+  <button id="bwav">WAV</button>
+  <button id="blang">EN</button>
+</header>
+<nav id="chips" aria-label="Pistas"></nav>
+<main>
+  <section id="grid"></section>
+  <section id="lanebox">
+    <div class="modes">
+      <span class="lbl" data-i18n="tap">Toque:</span>
+      <button id="mNote" data-i18n="note">Nota</button>
+      <button id="mAcc" data-i18n="accent">Acento</button>
+      <span class="sp"></span>
+      <span class="lbl" data-i18n="lane">Carril:</span>
+      <button id="lVel" data-i18n="velocity">Velocity</button>
+      <button id="lProb" data-i18n="prob">Prob.</button>
+    </div>
+    <div id="lane"></div>
+  </section>
+  <div id="tabs">
+    <button data-tab="0" data-i18n="track">Pista</button>
+    <button data-tab="1" data-i18n="fx">Efectos</button>
+    <button data-tab="2" data-i18n="assistant">Asistente</button>
+  </div>
+  <section id="panels">
+    <div class="panel" id="pTrack"><h2 id="trTitle"></h2>
+      <div class="ctl"><span data-i18n="kit">Kit</span><select id="kit"><option value="808">808-style</option><option value="909">909-style</option></select><span></span></div>
+      <div id="trCtl"></div>
+      <div class="btns"><button id="clr" data-i18n="clear">Vaciar pista</button><button id="sug" class="big" data-i18n="suggest">Sugerir</button></div>
+    </div>
+    <div class="panel" id="pFx"><h2 data-i18n="fxmaster">Efectos y master</h2>
+      <div id="fxCtl"></div>
+      <div class="ctl"><span data-i18n="dlytime">Tiempo delay</span><select id="div"><option>1/16</option><option>1/8</option><option>3/16</option><option>1/4</option></select><span></span></div>
+    </div>
+    <div class="panel" id="pAsst"><h2 data-i18n="assistant">Asistente</h2>
+      <div class="ctl"><span data-i18n="style">Estilo</span><select id="style"></select><span></span></div>
+      <div id="sdesc"></div>
+      <div class="btns"><button id="gen" class="big" data-i18n="generate">Generar groove completo</button></div>
+      <div class="btns"><button id="sug2" data-i18n="suggestTrack">Sugerir esta pista</button><button id="snd" data-i18n="styleSound">Sonido del estilo</button></div>
+    </div>
+  </section>
+</main>
+<div id="modal"><div id="mbox" role="dialog" aria-modal="true"></div></div>
+<div id="toast" role="status"></div>
+
+<script>
+'use strict';
+/* =====================================================================
+   DR-11 v0.1.0 — caja de ritmos de techno en un solo archivo.
+   Módulos: 1 Utilidades · 2 i18n · 3 Estilos · 4 Modelo de datos
+            5 Historial (comandos) · 6 Motor de audio · 7 Scheduler
+            8 Exportación WAV · 9 Asistente · 10 Almacenamiento · 11 UI
+   ===================================================================== */
+const VERSION = '0.1.0';
+
+/* ---------- 1. Utilidades ---------- */
+const $ = id => document.getElementById(id);
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
+// PRNG con semilla (mulberry32): ruido e impulsos idénticos en directo y en la exportación.
+function prng(seed) { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+// Tirada determinista por (compás, pista, paso): la probabilidad suena igual al exportar.
+function roll(bar, tr, st) { return prng((bar * 73856093) ^ (tr * 19349663) ^ (st * 83492791) ^ 0x9E3779B9)(); }
+
+/* ---------- 2. i18n ---------- */
+const I18N = {
+  es: { play: 'Reproducir / parar', undo: 'Deshacer', redo: 'Rehacer', swing: 'Swing', patterns: 'Patrones', tap: 'Toque:', note: 'Nota', accent: 'Acento', lane: 'Carril:', velocity: 'Velocity', prob: 'Prob.', track: 'Pista', fx: 'Efectos', assistant: 'Asistente', kit: 'Kit', clear: 'Vaciar pista', suggest: 'Sugerir', fxmaster: 'Efectos y master', dlytime: 'Tiempo delay', style: 'Estilo', generate: 'Generar groove completo', suggestTrack: 'Sugerir esta pista', styleSound: 'Sonido del estilo',
+    vol: 'Volumen', pan: 'Pan', tune: 'Afinación', decay: 'Decay', tone: 'Tono', rev: 'Envío reverb', dly: 'Envío delay', frev: 'Reverb', fdly: 'Delay', fb: 'Feedback', sc: 'Sidechain', master: 'Master',
+    save: 'Guardar', load: 'Cargar', del: 'Borrar', close: 'Cerrar', name: 'Nombre del patrón', saved: 'Patrón guardado', loaded: 'Patrón cargado', none: 'Aún no hay patrones guardados.', confirmDel: '¿Borrar el patrón guardado?', overwrite: 'Ya existe un patrón con ese nombre. ¿Sobrescribirlo?', newPat: 'Patrón vacío',
+    exportT: 'Exportar WAV', bars: 'Compases', exportB: 'Exportar', rendering: 'Renderizando…', exported: 'WAV exportado', exportErr: 'No se pudo exportar', storeErr: 'No se pudo guardar en este navegador', noAudio: 'Este navegador no soporta Web Audio',
+    exportNote: 'WAV estéreo de 16 bits. Suena igual que la reproducción (misma mezcla y misma probabilidad).',
+    tr: ['Bombo', 'Rumble', 'Caja', 'Tom grave', 'Tom medio', 'Tom agudo', 'Rimshot', 'Palmada', 'Hat cerrado', 'Hat abierto', 'Crash', 'Ride'] },
+  en: { play: 'Play / stop', undo: 'Undo', redo: 'Redo', swing: 'Swing', patterns: 'Patterns', tap: 'Tap:', note: 'Note', accent: 'Accent', lane: 'Lane:', velocity: 'Velocity', prob: 'Prob.', track: 'Track', fx: 'Effects', assistant: 'Assistant', kit: 'Kit', clear: 'Clear track', suggest: 'Suggest', fxmaster: 'Effects & master', dlytime: 'Delay time', style: 'Style', generate: 'Generate full groove', suggestTrack: 'Suggest this track', styleSound: 'Style sound',
+    vol: 'Volume', pan: 'Pan', tune: 'Tune', decay: 'Decay', tone: 'Tone', rev: 'Reverb send', dly: 'Delay send', frev: 'Reverb', fdly: 'Delay', fb: 'Feedback', sc: 'Sidechain', master: 'Master',
+    save: 'Save', load: 'Load', del: 'Delete', close: 'Close', name: 'Pattern name', saved: 'Pattern saved', loaded: 'Pattern loaded', none: 'No saved patterns yet.', confirmDel: 'Delete the saved pattern?', overwrite: 'A pattern with that name already exists. Overwrite it?', newPat: 'Empty pattern',
+    exportT: 'Export WAV', bars: 'Bars', exportB: 'Export', rendering: 'Rendering…', exported: 'WAV exported', exportErr: 'Export failed', storeErr: 'Could not save in this browser', noAudio: 'This browser does not support Web Audio',
+    exportNote: '16-bit stereo WAV. Sounds the same as playback (same mix and same probability).',
+    tr: ['Kick', 'Rumble', 'Snare', 'Low tom', 'Mid tom', 'High tom', 'Rimshot', 'Clap', 'Closed hat', 'Open hat', 'Crash', 'Ride'] }
+};
+let lang = 'es';
+const t = k => (I18N[lang][k] != null ? I18N[lang][k] : k);
+
+/* ---------- 3. Estilos del asistente (contenido del productor) ---------- */
+const STYLES = [
+{
+ id:'berlin',
+ name:{es:'Berlin Warehouse', en:'Berlin Warehouse'},
+ desc:{es:'Bombo seco, rumble oscuro y hats crudos: nave industrial a las 5 am.', en:'Dry kick, dark rumble and raw hats: industrial hall at 5 am.'},
+ bpm:134, swing:0.04,
+ fx:{rev:0.45, dly:0.3, fb:0.45, div:'3/16', sc:0.6},
+ sound:{
+  BD:{kit:'909', tune:-2, decay:0.55, tone:0.4, vol:0.92, pan:0, rev:0, dly:0},
+  RB:{kit:'909', tune:-2, decay:0.75, tone:0.3, vol:0.7, pan:0, rev:0.25, dly:0},
+  SD:{kit:'909', tune:-1, decay:0.4, tone:0.45, vol:0.5, pan:0.05, rev:0.3, dly:0.1},
+  LT:{kit:'909', tune:-3, decay:0.55, tone:0.4, vol:0.6, pan:-0.25, rev:0.3, dly:0.25},
+  MT:{kit:'909', tune:-2, decay:0.45, tone:0.45, vol:0.55, pan:0.2, rev:0.3, dly:0.3},
+  HT:{kit:'909', tune:0, decay:0.4, tone:0.5, vol:0.5, pan:0.3, rev:0.3, dly:0.3},
+  RS:{kit:'909', tune:-2, decay:0.4, tone:0.55, vol:0.55, pan:-0.2, rev:0.5, dly:0.45},
+  CP:{kit:'909', tune:-1, decay:0.5, tone:0.45, vol:0.62, pan:0, rev:0.5, dly:0.1},
+  CH:{kit:'909', tune:0, decay:0.35, tone:0.55, vol:0.55, pan:0.1, rev:0.05, dly:0},
+  OH:{kit:'909', tune:-1, decay:0.5, tone:0.5, vol:0.6, pan:-0.1, rev:0.1, dly:0},
+  CC:{kit:'909', tune:-2, decay:0.7, tone:0.45, vol:0.45, pan:0.15, rev:0.4, dly:0.1},
+  RC:{kit:'909', tune:0, decay:0.5, tone:0.5, vol:0.42, pan:0.25, rev:0.15, dly:0}
+ },
+ pat:{
+  BD:['X---X---X---X---','X---X---X---X--o','X---X--oX---X-o-'],
+  RB:['--x---x---x---x-','-oxo-oxo-oxo-oxo','--xo--xo--xo--xq'],
+  SD:['----------------','------------o--o','----o--q----o-qo'],
+  LT:['------x------x--','---x--x--x--x---','--x--x--x--x--p-'],
+  MT:['----------p-----','-x-----x-----p--','---p-----x----x-'],
+  HT:['----------------','--------------pq','-----p-----p----'],
+  RS:['---x-----x--x---','--x--x--x--x--x-','-x----x--p-x---q'],
+  CP:['----x-------x---','----x-------x--q','----x--q----x-o-'],
+  CH:['xoxoxoxoxoxoxoxo','x-xqx-xqx-xqx-xo','xxoxxxoxxxoxxxop'],
+  OH:['--x---x---x---x-','--X---x---X---x-','--x---x---x--px-'],
+  CC:['----------------','X---------------','----------------'],
+  RC:['----------------','x-x-x-x-x-x-x-x-','--x---x---x---x-']
+ }
+},
+{
+ id:'hypnotic',
+ name:{es:'Hypnotic', en:'Hypnotic'},
+ desc:{es:'Bucle mental: percusión mínima en 3 contra 4, delays largos y poco cambio.', en:'Mind loop: minimal 3-against-4 percussion, long delays, slow change.'},
+ bpm:132, swing:0,
+ fx:{rev:0.5, dly:0.55, fb:0.62, div:'3/16', sc:0.45},
+ sound:{
+  BD:{kit:'808', tune:-1, decay:0.5, tone:0.3, vol:0.88, pan:0, rev:0, dly:0},
+  RB:{kit:'808', tune:-1, decay:0.8, tone:0.25, vol:0.65, pan:0, rev:0.2, dly:0},
+  SD:{kit:'808', tune:2, decay:0.3, tone:0.4, vol:0.4, pan:-0.1, rev:0.35, dly:0.3},
+  LT:{kit:'808', tune:-2, decay:0.5, tone:0.4, vol:0.58, pan:-0.3, rev:0.35, dly:0.5},
+  MT:{kit:'808', tune:1, decay:0.4, tone:0.45, vol:0.55, pan:0.3, rev:0.35, dly:0.55},
+  HT:{kit:'808', tune:3, decay:0.35, tone:0.5, vol:0.5, pan:-0.15, rev:0.4, dly:0.6},
+  RS:{kit:'808', tune:4, decay:0.3, tone:0.6, vol:0.52, pan:0.25, rev:0.45, dly:0.65},
+  CP:{kit:'808', tune:0, decay:0.35, tone:0.4, vol:0.4, pan:0, rev:0.55, dly:0.25},
+  CH:{kit:'808', tune:2, decay:0.25, tone:0.6, vol:0.5, pan:0.15, rev:0.1, dly:0.15},
+  OH:{kit:'808', tune:1, decay:0.35, tone:0.55, vol:0.48, pan:-0.15, rev:0.15, dly:0.1},
+  CC:{kit:'808', tune:0, decay:0.6, tone:0.4, vol:0.35, pan:0.1, rev:0.5, dly:0.2},
+  RC:{kit:'808', tune:2, decay:0.4, tone:0.55, vol:0.38, pan:-0.25, rev:0.2, dly:0.2}
+ },
+ pat:{
+  BD:['X---X---X---X---','X---X---X---X---','X---X---X--oX---'],
+  RB:['--x---x---x---x-','--xo--xo--xo--xo','-qx--qx--qx--qx-'],
+  SD:['----------------','---------------q','-------q-------o'],
+  LT:['---x--x--x--x--x','x--x--x--x--x--x','--x--x--x--x--x-'],
+  MT:['-x----x----x----','-x---x---x---x--','--p--x--p--x--p-'],
+  HT:['-----p-----p----','---x-----x-----x','-q--x--q--x--q--'],
+  RS:['x--x--x--x--x--x','-x--x--x--x--x--','x--x--o--x--x--q'],
+  CP:['----------------','------------x---','----o-------o---'],
+  CH:['oxoxoxoxoxoxoxox','xqxoxqxoxqxoxqxo','x-oxx-oxx-oxx-ox'],
+  OH:['--x---x---x---x-','------x-------x-','--x---q---x---q-'],
+  CC:['----------------','----------------','x---------------'],
+  RC:['----------------','x---x---x---x---','x--x--x--x--x--x']
+ }
+},
+{
+ id:'peak',
+ name:{es:'Peak Time', en:'Peak Time'},
+ desc:{es:'Hora punta: bombo gordo, palmada al 2 y 4, ride abierto y máxima energía.', en:'Prime time: fat kick, clap on 2 and 4, open ride and full energy.'},
+ bpm:138, swing:0.03,
+ fx:{rev:0.5, dly:0.3, fb:0.4, div:'1/8', sc:0.75},
+ sound:{
+  BD:{kit:'909', tune:0, decay:0.6, tone:0.55, vol:0.94, pan:0, rev:0, dly:0},
+  RB:{kit:'909', tune:0, decay:0.7, tone:0.35, vol:0.72, pan:0, rev:0.2, dly:0},
+  SD:{kit:'909', tune:0, decay:0.5, tone:0.6, vol:0.6, pan:0, rev:0.35, dly:0.1},
+  LT:{kit:'909', tune:-1, decay:0.5, tone:0.5, vol:0.6, pan:-0.3, rev:0.3, dly:0.2},
+  MT:{kit:'909', tune:0, decay:0.45, tone:0.5, vol:0.58, pan:0, rev:0.3, dly:0.2},
+  HT:{kit:'909', tune:1, decay:0.4, tone:0.55, vol:0.55, pan:0.3, rev:0.3, dly:0.25},
+  RS:{kit:'909', tune:0, decay:0.4, tone:0.6, vol:0.5, pan:0.2, rev:0.45, dly:0.35},
+  CP:{kit:'909', tune:0, decay:0.6, tone:0.55, vol:0.72, pan:0, rev:0.55, dly:0.1},
+  CH:{kit:'909', tune:0, decay:0.4, tone:0.6, vol:0.6, pan:0.1, rev:0.05, dly:0},
+  OH:{kit:'909', tune:0, decay:0.6, tone:0.6, vol:0.65, pan:-0.1, rev:0.1, dly:0},
+  CC:{kit:'909', tune:0, decay:0.8, tone:0.55, vol:0.5, pan:0.1, rev:0.45, dly:0.15},
+  RC:{kit:'909', tune:0, decay:0.6, tone:0.55, vol:0.5, pan:0.25, rev:0.15, dly:0}
+ },
+ pat:{
+  BD:['X---X---X---X---','X---X---X---X-x-','X---X--xX---X--o'],
+  RB:['--x---x---x---x-','-oxx-oxx-oxx-oxx','--xo--xo--xo-qxo'],
+  SD:['----------------','------------ooxX','----o-------o-xx'],
+  LT:['-------------x--','------x------x-x','---x--x--x--x---'],
+  MT:['------------p---','-------x----x---','--x-----x--x----'],
+  HT:['----------p-----','----------x-x---','-x---x----x---p-'],
+  RS:['--x--x----x--x--','---x--x--x--x--x','-x--x--x-x--x--q'],
+  CP:['----X-------X---','----X-------X--o','----X--q----X-oo'],
+  CH:['xxoxxxoxxxoxxxox','xoxoxoxoxoxoxoxp','xxxoxxxoxxxoxxxq'],
+  OH:['--X---X---X---X-','--X---X---X--pX-','--X--oX---X--oX-'],
+  CC:['X---------------','----------------','X-------x-------'],
+  RC:['x-x-x-x-x-x-x-x-','x-xox-xox-xox-xo','--x---x---x---x-']
+ }
+},
+{
+ id:'hard',
+ name:{es:'Hard Techno', en:'Hard Techno'},
+ desc:{es:'Bombo distorsionado y rápido, rumble constante, hats afilados y redobles.', en:'Fast distorted kick, relentless rumble, sharp hats and snare rolls.'},
+ bpm:148, swing:0,
+ fx:{rev:0.35, dly:0.2, fb:0.35, div:'1/16', sc:0.85},
+ sound:{
+  BD:{kit:'909', tune:1, decay:0.65, tone:0.8, vol:0.96, pan:0, rev:0, dly:0},
+  RB:{kit:'909', tune:1, decay:0.65, tone:0.45, vol:0.78, pan:0, rev:0.15, dly:0},
+  SD:{kit:'909', tune:2, decay:0.45, tone:0.7, vol:0.62, pan:0, rev:0.3, dly:0.05},
+  LT:{kit:'909', tune:-4, decay:0.6, tone:0.6, vol:0.62, pan:-0.25, rev:0.25, dly:0.15},
+  MT:{kit:'909', tune:-2, decay:0.5, tone:0.6, vol:0.6, pan:0.05, rev:0.25, dly:0.15},
+  HT:{kit:'909', tune:1, decay:0.4, tone:0.65, vol:0.55, pan:0.25, rev:0.25, dly:0.2},
+  RS:{kit:'909', tune:3, decay:0.35, tone:0.7, vol:0.5, pan:-0.2, rev:0.35, dly:0.25},
+  CP:{kit:'909', tune:1, decay:0.55, tone:0.65, vol:0.7, pan:0, rev:0.45, dly:0.05},
+  CH:{kit:'909', tune:2, decay:0.3, tone:0.7, vol:0.6, pan:0.1, rev:0.05, dly:0},
+  OH:{kit:'909', tune:1, decay:0.55, tone:0.7, vol:0.68, pan:-0.1, rev:0.1, dly:0},
+  CC:{kit:'909', tune:1, decay:0.75, tone:0.65, vol:0.5, pan:0.1, rev:0.35, dly:0.1},
+  RC:{kit:'909', tune:2, decay:0.5, tone:0.65, vol:0.5, pan:0.2, rev:0.1, dly:0}
+ },
+ pat:{
+  BD:['X---X---X---X---','X---X---X---X-xx','X--xX---X--xX-x-'],
+  RB:['-xxx-xxx-xxx-xxx','-oxx-oxx-oxx-oxx','--xx--xx--xx--xx'],
+  SD:['----------------','----x-------x-xx','------------oxxX'],
+  LT:['------x-------x-','---x--x--x--x--x','--x--x--x--x--xx'],
+  MT:['-----------x----','-x-----x---x----','---x-----x--x---'],
+  HT:['---------------p','-----x-------x-p','-x----x----x---q'],
+  RS:['---x--x---x--x--','-x--x--x--x--x--','--x--x--x-x--x-p'],
+  CP:['----X-------X---','----X--x----X--x','----X-------X-xX'],
+  CH:['xxoxxxoxxxoxxxox','xxxxxxxxxxxxxxxx','xoxxxoxxxoxxxoxp'],
+  OH:['--X---X---X---X-','--X---X---X---XX','--X--pX---X--pX-'],
+  CC:['X---------------','X-------X-------','----------------'],
+  RC:['--x---x---x---x-','x-x-x-x-x-x-x-x-','xxx-xxx-xxx-xxx-']
+ }
+},
+{
+ id:'dub',
+ name:{es:'Dub Techno', en:'Dub Techno'},
+ desc:{es:'Bombo redondo y suave, rimshots y palmadas ahogados en eco y reverb.', en:'Soft round kick, rimshots and claps drowned in echo and reverb.'},
+ bpm:122, swing:0.1,
+ fx:{rev:0.75, dly:0.7, fb:0.7, div:'3/16', sc:0.4},
+ sound:{
+  BD:{kit:'808', tune:-3, decay:0.6, tone:0.25, vol:0.88, pan:0, rev:0, dly:0},
+  RB:{kit:'808', tune:-3, decay:0.85, tone:0.2, vol:0.55, pan:0, rev:0.3, dly:0},
+  SD:{kit:'808', tune:-1, decay:0.35, tone:0.35, vol:0.4, pan:0.1, rev:0.6, dly:0.5},
+  LT:{kit:'808', tune:-2, decay:0.55, tone:0.35, vol:0.5, pan:-0.35, rev:0.5, dly:0.6},
+  MT:{kit:'808', tune:0, decay:0.45, tone:0.4, vol:0.48, pan:0.35, rev:0.5, dly:0.65},
+  HT:{kit:'808', tune:2, decay:0.4, tone:0.4, vol:0.42, pan:-0.2, rev:0.55, dly:0.7},
+  RS:{kit:'808', tune:0, decay:0.35, tone:0.45, vol:0.55, pan:0.3, rev:0.7, dly:0.8},
+  CP:{kit:'808', tune:-2, decay:0.5, tone:0.35, vol:0.5, pan:0, rev:0.8, dly:0.45},
+  CH:{kit:'808', tune:0, decay:0.3, tone:0.4, vol:0.5, pan:0.2, rev:0.2, dly:0.2},
+  OH:{kit:'808', tune:-1, decay:0.45, tone:0.4, vol:0.52, pan:-0.2, rev:0.3, dly:0.15},
+  CC:{kit:'808', tune:-3, decay:0.7, tone:0.3, vol:0.3, pan:0.15, rev:0.7, dly:0.3},
+  RC:{kit:'808', tune:-1, decay:0.5, tone:0.4, vol:0.35, pan:0.3, rev:0.35, dly:0.2}
+ },
+ pat:{
+  BD:['X---X---X---X---','X---X---X---X---','X---X---X--oX---'],
+  RB:['--x---x---x---x-','--o---x---o---x-','--xo--x---xo--x-'],
+  SD:['----------------','-------q--------','---------o-----q'],
+  LT:['----------------','------x---------','---x-----p--x---'],
+  MT:['---------p------','-x---------p----','------p------x--'],
+  HT:['----------------','--------------p-','-p-------q------'],
+  RS:['---x------x-----','--x--x-----x----','-x----x--x-----p'],
+  CP:['----x-------x---','------------x---','----x--q----x---'],
+  CH:['--o-x-o---o-x-oq','o-xqo-x-o-xqo-x-','x-oxq-oxx-oxq-ox'],
+  OH:['--x---x---x---x-','--x-------x---q-','--x---x--p----x-'],
+  CC:['----------------','----------------','x---------------'],
+  RC:['----------------','--x---x---x---x-','x--o--x--o--x--o']
+ }
+},
+{
+ id:'detroit',
+ name:{es:'Detroit', en:'Detroit'},
+ desc:{es:'Funk de máquina: 909 con swing, toms sincopados, ride y caja con alma.', en:'Machine funk: swung 909, syncopated toms, ride and soulful snare.'},
+ bpm:130, swing:0.14,
+ fx:{rev:0.4, dly:0.35, fb:0.4, div:'1/8', sc:0.5},
+ sound:{
+  BD:{kit:'909', tune:0, decay:0.5, tone:0.5, vol:0.9, pan:0, rev:0, dly:0},
+  RB:{kit:'808', tune:0, decay:0.6, tone:0.3, vol:0.5, pan:0, rev:0.15, dly:0},
+  SD:{kit:'909', tune:1, decay:0.5, tone:0.55, vol:0.6, pan:0.05, rev:0.3, dly:0.1},
+  LT:{kit:'909', tune:0, decay:0.5, tone:0.5, vol:0.62, pan:-0.35, rev:0.25, dly:0.25},
+  MT:{kit:'909', tune:2, decay:0.45, tone:0.5, vol:0.6, pan:0, rev:0.25, dly:0.3},
+  HT:{kit:'909', tune:4, decay:0.4, tone:0.55, vol:0.58, pan:0.35, rev:0.25, dly:0.3},
+  RS:{kit:'808', tune:0, decay:0.4, tone:0.55, vol:0.55, pan:0.25, rev:0.4, dly:0.4},
+  CP:{kit:'909', tune:0, decay:0.5, tone:0.5, vol:0.65, pan:0, rev:0.5, dly:0.15},
+  CH:{kit:'909', tune:1, decay:0.35, tone:0.55, vol:0.6, pan:0.15, rev:0.05, dly:0},
+  OH:{kit:'909', tune:0, decay:0.5, tone:0.55, vol:0.62, pan:-0.15, rev:0.1, dly:0.05},
+  CC:{kit:'909', tune:0, decay:0.7, tone:0.5, vol:0.45, pan:0.1, rev:0.4, dly:0.15},
+  RC:{kit:'909', tune:1, decay:0.55, tone:0.55, vol:0.52, pan:0.3, rev:0.15, dly:0.05}
+ },
+ pat:{
+  BD:['X---X---X---X---','X---X---X-x-X---','X--xX---X---X-x-'],
+  RB:['--x---x---x---x-','------x-------x-','--x---xo--x---xo'],
+  SD:['----x-------x---','----x--o-o--x---','----x--o----x-oo'],
+  LT:['---x------x--x--','x--x--x---x--x--','--x--x--x--x--x-'],
+  MT:['------x---------','------x--x----x-','-x-----x--x----p'],
+  HT:['---------x----p-','-x-------x--x---','---x--x--x--x--q'],
+  RS:['--x--x-----x--x-','-x--x--x--x--x--','x--x--x--x--x-p-'],
+  CP:['----x-------x---','----x-------x--o','-------x----x---'],
+  CH:['x-xox-xox-xox-xo','xxoxxxoxxxoxxxox','x-xxo-xxx-xxo-xp'],
+  OH:['--x---x---x---x-','--x---x---x--xx-','--x--px---x--px-'],
+  CC:['X---------------','----------------','X---------x-----'],
+  RC:['x-xxx-xxx-xxx-xx','x-x-x-x-x-x-x-x-','x-xox-xox-xox-xo']
+ }
+}
+];
+
+/* ---------- 4. Modelo de datos (versionado) ---------- */
+const DATA_V = 1;
+const TR = [['BD', '#ff5a4d'], ['RB', '#c95cff'], ['SD', '#ffb02e'], ['LT', '#ff7a00'], ['MT', '#ff9f40'], ['HT', '#ffc670'], ['RS', '#7ddc5a'], ['CP', '#ff5fa2'], ['CH', '#00d1ff'], ['OH', '#4d9cff'], ['CC', '#b6f24a'], ['RC', '#5ce0c0']].map(([id, c]) => ({ id, c }));
+const NT = TR.length, NS = 16, iBD = 0, iCH = 8, iOH = 9;
+const DIVS = { '1/16': 0.25, '1/8': 0.5, '3/16': 0.75, '1/4': 1 };
+const newStep = () => ({ on: false, vel: 0.8, acc: false, prob: 100 });
+const newTrack = () => ({ kit: '909', vol: 0.8, pan: 0, tune: 0, decay: 0.5, tone: 0.5, rev: 0, dly: 0, mute: false, solo: false, steps: Array.from({ length: NS }, newStep) });
+const newState = () => ({ v: DATA_V, bpm: 134, swing: 0, style: STYLES[0].id, fx: { rev: 0.3, dly: 0.25, fb: 0.35, div: '3/16', sc: 0.5, master: 0.8 }, tracks: Array.from({ length: NT }, newTrack) });
+// Normaliza y migra un patrón guardado: rellena lo que falte para no perder trabajo entre versiones.
+function migrate(d) {
+  const base = newState();
+  if (!d || typeof d !== 'object') return base;
+  // (v1 es el primer formato; las migraciones futuras se encadenan aquí: if (d.v < 2) {...})
+  const n = (v, def, a, b) => (typeof v === 'number' && isFinite(v) ? clamp(v, a, b) : def);
+  base.bpm = Math.round(n(d.bpm, 134, 60, 200)); base.swing = n(d.swing, 0, 0, 0.6);
+  if (STYLES.some(s => s.id === d.style)) base.style = d.style;
+  const f = d.fx || {};
+  base.fx = { rev: n(f.rev, 0.3, 0, 1), dly: n(f.dly, 0.25, 0, 1), fb: n(f.fb, 0.35, 0, 0.8), div: DIVS[f.div] ? f.div : '3/16', sc: n(f.sc, 0.5, 0, 1), master: n(f.master, 0.8, 0, 1) };
+  (Array.isArray(d.tracks) ? d.tracks : []).slice(0, NT).forEach((s, i) => {
+    if (!s) return; const tr = base.tracks[i];
+    tr.kit = s.kit === '808' ? '808' : '909'; tr.vol = n(s.vol, 0.8, 0, 1); tr.pan = n(s.pan, 0, -1, 1); tr.tune = Math.round(n(s.tune, 0, -12, 12));
+    tr.decay = n(s.decay, 0.5, 0, 1); tr.tone = n(s.tone, 0.5, 0, 1); tr.rev = n(s.rev, 0, 0, 1); tr.dly = n(s.dly, 0, 0, 1); tr.mute = !!s.mute; tr.solo = !!s.solo;
+    (Array.isArray(s.steps) ? s.steps : []).slice(0, NS).forEach((p, j) => { if (p) tr.steps[j] = { on: !!p.on, vel: n(p.vel, 0.8, 0.05, 1), acc: !!p.acc, prob: Math.round(n(p.prob, 100, 5, 100)) }; });
+  });
+  return base;
+}
+let S; // estado actual (patrón + sonido + efectos). Solo se modifica mediante comandos.
+
+/* ---------- 5. Historial: sistema de comandos ---------- */
+// Cada acción (manual o del asistente) es un comando {undo, redo} basado en instantáneas del estado.
+const H = { u: [], r: [], max: 200 };
+let gest = null; // instantánea "antes" de un gesto continuo (arrastrar un fader o el carril)
+function pushCmd(before, after) {
+  if (before === after) return;
+  H.u.push({ undo() { S = JSON.parse(before); }, redo() { S = JSON.parse(after); } });
+  if (H.u.length > H.max) H.u.shift();
+  H.r.length = 0;
+}
+function cmd(fn) { gestEnd(); const b = JSON.stringify(S); fn(); pushCmd(b, JSON.stringify(S)); live(); }
+function gestBegin() { if (gest == null) gest = JSON.stringify(S); }
+function gestEnd() { if (gest != null) { const b = gest; gest = null; pushCmd(b, JSON.stringify(S)); live(); } }
+function undo() { gestEnd(); const c = H.u.pop(); if (c) { c.undo(); H.r.push(c); live(); } }
+function redo() { gestEnd(); const c = H.r.pop(); if (c) { c.redo(); H.u.push(c); live(); } }
+
+/* ---------- 6. Motor de audio ---------- */
+// buildGraph crea la MISMA cadena para el directo (AudioContext) y la exportación (OfflineAudioContext).
+function buildGraph(c, getS) {
+  const G = { c, tr: [], lastOH: null }, sr = c.sampleRate;
+  // Buffers generados por código (deterministas)
+  const mkBuf = (ch, secs, fn) => { const b = c.createBuffer(ch, Math.floor(sr * secs), sr); for (let k = 0; k < ch; k++) fn(b.getChannelData(k), k); return b; };
+  G.noise = mkBuf(1, 2, d => { const r = prng(11); for (let i = 0; i < d.length; i++) d[i] = r() * 2 - 1; });
+  const metal = (freqs, nz, seed) => mkBuf(1, 2, d => { const r = prng(seed); for (let i = 0; i < d.length; i++) { let s = 0; for (const f of freqs) s += ((i * f / sr) % 1) < 0.5 ? 1 : -1; d[i] = s / freqs.length * (1 - nz) + (r() * 2 - 1) * nz; } });
+  G.metal = { '808': metal([205.3, 304.4, 369.6, 522.7, 540, 800], 0, 5), '909': metal([263, 400, 421, 474, 587, 845].map(f => f * 1.38), 0.45, 7) };
+  const curve = fn => { const a = new Float32Array(2049); for (let i = 0; i < 2049; i++) a[i] = fn(i / 1024 - 1); return a; };
+  G.drive = curve(x => Math.tanh(2.5 * x) / Math.tanh(2.5));
+  // Master: ganancia → limitador (compresor rápido) → recorte suave → salida
+  const pre = c.createGain(), lim = c.createDynamicsCompressor(), clip = c.createWaveShaper(), out = c.createGain();
+  lim.threshold.value = -6; lim.knee.value = 2; lim.ratio.value = 20; lim.attack.value = 0.002; lim.release.value = 0.12;
+  clip.curve = curve(x => { const a = Math.abs(x); return a < 0.7 ? x : Math.sign(x) * (0.7 + 0.28 * Math.tanh((a - 0.7) / 0.28)); });
+  pre.connect(lim); lim.connect(out); out.connect(clip); clip.connect(c.destination); // el recorte va el último: nunca supera 0 dBFS
+  G.out = clip;
+  // Bus con sidechain (todo menos el bombo se agacha con cada golpe de bombo)
+  const duck = c.createGain(); duck.connect(pre); pre.gain.value = 1.5;
+  // Reverb: impulso generado por código, con pasa-altos para no ensuciar los graves
+  const revIn = c.createGain(), revHP = c.createBiquadFilter(), conv = c.createConvolver(), revRet = c.createGain();
+  revHP.type = 'highpass'; revHP.frequency.value = 320;
+  conv.buffer = mkBuf(2, 2.2, (d, k) => { const r = prng(21 + k); for (let i = 0; i < d.length; i++) { const x = i / d.length; d[i] = (r() * 2 - 1) * Math.pow(1 - x, 3.2) * (i < 200 ? i / 200 : 1); } });
+  revIn.connect(revHP); revHP.connect(conv); conv.connect(revRet); revRet.connect(duck);
+  // Delay sincronizado al BPM con realimentación filtrada
+  const dlyIn = c.createGain(), dly = c.createDelay(2), dlyLP = c.createBiquadFilter(), dlyHP = c.createBiquadFilter(), fb = c.createGain(), dlyRet = c.createGain();
+  dlyLP.type = 'lowpass'; dlyLP.frequency.value = 4200; dlyHP.type = 'highpass'; dlyHP.frequency.value = 350;
+  dlyIn.connect(dly); dly.connect(dlyLP); dlyLP.connect(dlyHP); dlyHP.connect(fb); fb.connect(dly); dlyHP.connect(dlyRet); dlyRet.connect(duck);
+  // Canales de pista: volumen → pan → (bus) + envíos
+  for (let i = 0; i < NT; i++) {
+    const g = c.createGain(), p = c.createStereoPanner ? c.createStereoPanner() : c.createGain(), sr_ = c.createGain(), sd = c.createGain();
+    g.connect(p); p.connect(i === iBD ? pre : duck); p.connect(sr_); sr_.connect(revIn); p.connect(sd); sd.connect(dlyIn);
+    G.tr.push({ g, p, sr: sr_, sd });
+  }
+  const audible = (s, i) => { const anySolo = s.tracks.some(x => x.solo), x = s.tracks[i]; return !x.mute && (!anySolo || x.solo); };
+  // Vuelca el estado en los parámetros de audio (instant = sin rampa, para el render offline)
+  G.sync = instant => {
+    const s = getS(), now = c.currentTime;
+    const set = (prm, v) => { if (instant) prm.value = v; else prm.setTargetAtTime(v, now, 0.015); };
+    s.tracks.forEach((x, i) => { const n = G.tr[i]; set(n.g.gain, audible(s, i) ? x.vol * x.vol * 1.4 : 0); if (n.p.pan) set(n.p.pan, x.pan); set(n.sr.gain, x.rev); set(n.sd.gain, x.dly); });
+    set(revRet.gain, s.fx.rev * 0.9); set(dlyRet.gain, s.fx.dly * 0.9); set(fb.gain, s.fx.fb); set(dly.delayTime, DIVS[s.fx.div] * 60 / s.bpm); set(out.gain, s.fx.master * s.fx.master * 1.4);
+  };
+  /* --- Voces sintetizadas --- */
+  const amp = (t, a, att, dec) => { const g = c.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(a, t + att); g.gain.exponentialRampToValueAtTime(0.0001, t + att + dec); return g; };
+  const flt = (type, f, q) => { const b = c.createBiquadFilter(); b.type = type; b.frequency.value = Math.min(f, sr * 0.45); if (q) b.Q.value = q; return b; };
+  const chain = (...n) => { for (let i = 0; i < n.length - 1; i++) n[i].connect(n[i + 1]); };
+  const osc = (type, f, t, dur, fStart, sweep) => { const o = c.createOscillator(); o.type = type; if (fStart) { o.frequency.setValueAtTime(fStart, t); o.frequency.exponentialRampToValueAtTime(f, t + sweep); } else o.frequency.value = f; o.start(t); o.stop(t + dur + 0.05); return o; };
+  const buf = (b, t, dur, off, rate) => { const s = c.createBufferSource(); s.buffer = b; s.loop = true; if (rate) s.playbackRate.value = rate; s.start(t, off || 0); s.stop(t + dur + 0.05); return s; };
+  const shaper = () => { const w = c.createWaveShaper(); w.curve = G.drive; return w; };
+  const tom = (f8, f9, d8) => (o, t, a, p) => {
+    const k9 = p.kit === '909', f = (k9 ? f9 : f8) * p.r, dec = d8 * (k9 ? 0.8 : 1) * p.dm;
+    chain(osc('sine', f, t, dec, f * (1.3 + p.tone * (k9 ? 1.4 : 0.8)), 0.06), amp(t, a, 0.001, dec), o);
+    if (k9) chain(buf(G.noise, t, 0.05, 0.3), flt('lowpass', 900 * p.r), amp(t, a * 0.35, 0.001, 0.04), o);
+  };
+  const hat = (d8, d9, lvl, hp8, hp9, off) => (o, t, a, p) => {
+    const k9 = p.kit === '909', dec = (k9 ? d9 : d8) * p.dm;
+    chain(buf(G.metal[p.kit], t, dec, off, p.r), flt('highpass', (k9 ? hp9 : hp8) * p.tb, 0.8), amp(t, a * lvl * (k9 ? 1 : 2), 0.001, dec), o);
+  };
+  const V = [
+    /* BD */ (o, t, a, p) => {
+      const k9 = p.kit === '909', f = (k9 ? 50 : 47) * p.r, dec = (k9 ? 0.3 : 0.55) * p.dm, g = amp(t, a * 1.7, 0.001, dec);
+      const s = osc('sine', f, t, dec, f * (k9 ? 5.5 : 3), k9 ? 0.07 : 0.035);
+      if (k9) chain(s, shaper(), g, o); else chain(s, g, o);
+      chain(buf(G.noise, t, 0.03, 0.1), flt('highpass', k9 ? 1500 : 800), amp(t, a * (0.1 + p.tone * 0.5) * (k9 ? 1 : 0.5), 0.0005, 0.012), o);
+    },
+    /* RB: capa sub de ataque lento que rellena el hueco entre bombos */ (o, t, a, p) => {
+      const f = 46 * p.r, dec = 0.22 * p.dm, att = 0.045;
+      chain(osc('sine', f, t, dec + att), shaper(), flt('lowpass', 140 * p.tb), amp(t, a * 0.45, att, dec), o);
+      chain(buf(G.noise, t, dec + att, 0.7), flt('lowpass', 110 * p.tb, 2), amp(t, a * 1.2, att, dec), o);
+    },
+    /* SD */ (o, t, a, p) => {
+      const k9 = p.kit === '909';
+      if (k9) chain(osc('triangle', 190 * p.r, t, 0.1 * p.dm, 400 * p.r, 0.03), amp(t, a * 0.7, 0.001, 0.1 * p.dm), o);
+      else { chain(osc('sine', 180 * p.r, t, 0.12 * p.dm), amp(t, a * 0.6, 0.001, 0.12 * p.dm), o); chain(osc('sine', 330 * p.r, t, 0.07 * p.dm), amp(t, a * 0.35, 0.001, 0.07 * p.dm), o); }
+      const dn = (k9 ? 0.2 : 0.16) * p.dm;
+      chain(buf(G.noise, t, dn, 0.5), flt('highpass', k9 ? 1100 : 1800), flt('lowpass', 9000 * p.tb), amp(t, a * (0.5 + p.tone * 0.8), 0.001, dn), o);
+    },
+    /* LT */ tom(80, 90, 0.36), /* MT */ tom(120, 135, 0.28), /* HT */ tom(165, 190, 0.22),
+    /* RS */ (o, t, a, p) => {
+      const k9 = p.kit === '909', dec = (k9 ? 0.04 : 0.03) * p.dm, hp = flt('highpass', 350 * p.tb), g = amp(t, a * 0.9, 0.0005, dec);
+      osc('triangle', (k9 ? 500 : 455) * p.r, t, dec).connect(hp); osc(k9 ? 'square' : 'sine', (k9 ? 220 : 1667) * p.r, t, dec).connect(hp);
+      if (k9) chain(hp, shaper(), g, o); else chain(hp, g, o);
+    },
+    /* CP: tres ráfagas de ruido + cola */ (o, t, a, p) => {
+      const k9 = p.kit === '909', tail = (k9 ? 0.24 : 0.17) * p.dm, g = c.createGain(), pk = a * 2.4;
+      g.gain.setValueAtTime(0, t);
+      for (let i = 0; i < 3; i++) { g.gain.setValueAtTime(pk, t + i * 0.011); g.gain.exponentialRampToValueAtTime(pk * 0.15, t + i * 0.011 + 0.01); }
+      g.gain.setValueAtTime(pk * 0.8, t + 0.033); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.033 + tail);
+      chain(buf(G.noise, t, tail + 0.04, 0.9), flt('bandpass', (k9 ? 1250 : 1000) * p.tb, 1.4), flt('highpass', 500), g, o);
+    },
+    /* CH */ hat(0.045, 0.055, 1.8, 7000, 8200, 0),
+    /* OH */ hat(0.32, 0.4, 1.1, 6500, 7800, 0.37),
+    /* CC */ (o, t, a, p) => {
+      const k9 = p.kit === '909', dec = (k9 ? 1.3 : 1.0) * p.dm;
+      chain(buf(G.metal[p.kit], t, dec, 0.61, p.r * 0.92), flt('highpass', 3800 * p.tb, 0.7), amp(t, a * 0.6, 0.002, dec), o);
+      chain(buf(G.noise, t, dec * 0.6, 1.1), flt('highpass', 6000 * p.tb), amp(t, a * 0.3, 0.002, dec * 0.6), o);
+    },
+    /* RC */ (o, t, a, p) => {
+      const k9 = p.kit === '909', dec = (k9 ? 0.7 : 0.55) * p.dm;
+      chain(buf(G.metal[p.kit], t, dec, 0.83, p.r * 1.07), flt('bandpass', (k9 ? 8200 : 6800) * p.tb, 1.6), flt('highpass', 5000), amp(t, a * 1.9, 0.001, dec), o);
+    }
+  ];
+  // Dispara una pista en el instante t leyendo sus parámetros actuales
+  G.trigger = (i, t, vel, acc) => {
+    const s = getS(), x = s.tracks[i];
+    let o = G.tr[i].g;
+    if (i === iOH) { const ch = c.createGain(); ch.connect(o); G.lastOH = ch; o = ch; } // nodo propio para el choke
+    V[i](o, t, vel * (acc ? 1.3 : 1) * 0.7, { kit: x.kit, r: Math.pow(2, x.tune / 12), dm: Math.pow(3, x.decay * 2 - 1), tone: x.tone, tb: Math.pow(2, (x.tone - 0.5) * 2) });
+    if (i === iBD && s.fx.sc > 0 && audible(s, i)) { duck.gain.setTargetAtTime(1 - s.fx.sc * 0.9, t, 0.004); duck.gain.setTargetAtTime(1, t + 0.045, 0.07); }
+  };
+  // Programa un paso completo: usada tal cual por el scheduler y por el render offline
+  G.step = (bar, st, t) => {
+    const s = getS(), hits = [];
+    s.tracks.forEach((x, i) => { const p = x.steps[st]; if (p.on && (p.prob >= 100 || roll(bar, i, st) * 100 < p.prob)) hits.push(i); });
+    if (hits.includes(iCH) && G.lastOH) { G.lastOH.gain.setTargetAtTime(0, t, 0.004); G.lastOH = null; } // CH corta a OH
+    for (const i of hits) { const p = s.tracks[i].steps[st]; G.trigger(i, t, p.vel, p.acc); }
+  };
+  G.sync(true);
+  return G;
+}
+// Instante de un paso dentro de la rejilla, con swing en las semicorcheas pares
+const stepDur = s => 60 / s.bpm / 4;
+const swingOff = (s, st) => (st % 2 ? s.swing * stepDur(s) * 0.66 : 0);
+
+/* ---------- 7. Scheduler con lookahead (setTimeout + currentTime) ---------- */
+let ctx = null, G = null, analyser = null;
+const seq = { playing: false, step: 0, bar: 0, next: 0, timer: 0, q: [], stats: { steps: 0, late: 0 } };
+const LOOK_MS = 25, AHEAD = 0.12;
+function ensureCtx() { // un solo AudioContext, creado/reanudado dentro de un gesto del usuario (iOS)
+  if (!ctx) {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) { toast(t('noAudio')); return false; }
+    try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (e) { /* iOS: sonar aunque esté en silencio */ }
+    ctx = new AC({ latencyHint: 'interactive' });
+    G = buildGraph(ctx, () => S);
+    analyser = ctx.createAnalyser(); analyser.fftSize = 1024; G.out.connect(analyser);
+  }
+  if (ctx.state !== 'running') ctx.resume();
+  return true;
+}
+function tick() {
+  if (!seq.playing) return;
+  if (seq.next < ctx.currentTime - 0.3) seq.next = ctx.currentTime + 0.05; // la pestaña estuvo dormida: resincroniza
+  const ahead = document.hidden ? 1.5 : AHEAD; // en segundo plano los temporizadores van a 1 s
+  if (seq.q.length > 64) seq.q.splice(0, seq.q.length - 64);
+  while (seq.next < ctx.currentTime + ahead) {
+    const tm = seq.next + swingOff(S, seq.step);
+    seq.stats.steps++; if (tm < ctx.currentTime) seq.stats.late++;
+    G.step(seq.bar, seq.step, Math.max(tm, ctx.currentTime));
+    seq.q.push({ st: seq.step, t: tm });
+    seq.next += stepDur(S);
+    if (++seq.step >= NS) { seq.step = 0; seq.bar++; }
+  }
+  seq.timer = setTimeout(tick, LOOK_MS);
+}
+function play() { if (!ensureCtx()) return; seq.playing = true; seq.step = 0; seq.bar = 0; seq.q = []; seq.next = ctx.currentTime + 0.08; tick(); refresh(); }
+function stop() { seq.playing = false; clearTimeout(seq.timer); seq.q = []; refresh(); }
+function audition(i) { if (!ensureCtx()) return; const go = () => G.trigger(i, ctx.currentTime + 0.01, 0.8, false); if (ctx.state === 'running') go(); else ctx.resume().then(go, () => {}); }
+
+/* ---------- 8. Exportación WAV (OfflineAudioContext, misma cadena) ---------- */
+function renderOffline(bars, state) {
+  const s = JSON.parse(JSON.stringify(state || S)), sr = ctx ? ctx.sampleRate : 44100, d = stepDur(s);
+  const OC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+  const oc = new OC(2, Math.ceil(sr * (bars * NS * d + 2.5 + s.fx.fb * 5)), sr), g = buildGraph(oc, () => s);
+  for (let b = 0; b < bars; b++) for (let st = 0; st < NS; st++) g.step(b, st, 0.02 + (b * NS + st) * d + swingOff(s, st));
+  return new Promise((res, rej) => { oc.oncomplete = e => res(e.renderedBuffer); try { const p = oc.startRendering(); if (p && p.catch) p.catch(rej); } catch (e) { rej(e); } });
+}
+function wavBlob(b) { // PCM 16 bits entrelazado
+  const n = b.length, ch = b.numberOfChannels, dv = new DataView(new ArrayBuffer(44 + n * ch * 2)), w = (o, s) => { for (let i = 0; i < s.length; i++) dv.setUint8(o + i, s.charCodeAt(i)); };
+  w(0, 'RIFF'); dv.setUint32(4, 36 + n * ch * 2, true); w(8, 'WAVEfmt '); dv.setUint32(16, 16, true); dv.setUint16(20, 1, true); dv.setUint16(22, ch, true);
+  dv.setUint32(24, b.sampleRate, true); dv.setUint32(28, b.sampleRate * ch * 2, true); dv.setUint16(32, ch * 2, true); dv.setUint16(34, 16, true); w(36, 'data'); dv.setUint32(40, n * ch * 2, true);
+  const d = []; for (let k = 0; k < ch; k++) d.push(b.getChannelData(k));
+  for (let i = 0, o = 44; i < n; i++) for (let k = 0; k < ch; k++, o += 2) { const x = clamp(d[k][i], -1, 1); dv.setInt16(o, x < 0 ? x * 32768 : x * 32767, true); }
+  return new Blob([dv], { type: 'audio/wav' });
+}
+async function exportWav(bars) {
+  toast(t('rendering'), true);
+  try {
+    const blob = wavBlob(await renderOffline(bars)), a = el('a');
+    a.href = URL.createObjectURL(blob); a.download = 'dr11-' + S.bpm + 'bpm.wav'; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 30000); toast(t('exported'));
+  } catch (e) { console.error(e); toast(t('exportErr')); }
+}
+
+/* ---------- 9. Asistente: escribe pasos y parámetros normales, siempre deshacibles ---------- */
+const PCH = { '-': [0, 0.8, 0, 100], x: [1, 0.8, 0, 100], X: [1, 0.8, 1, 100], o: [1, 0.4, 0, 100], p: [1, 0.8, 0, 50], q: [1, 0.4, 0, 40] };
+const parsePat = str => Array.from({ length: NS }, (_, i) => { const a = PCH[str[i]] || PCH['-']; return { on: !!a[0], vel: a[1], acc: !!a[2], prob: a[3] }; });
+const patStr = steps => steps.map(p => !p.on ? '-' : p.prob < 100 ? (p.vel < 0.6 ? 'q' : 'p') : p.acc ? 'X' : p.vel < 0.6 ? 'o' : 'x').join('');
+const curStyle = () => STYLES.find(s => s.id === S.style) || STYLES[0];
+function applySound(st, i) { const x = S.tracks[i], d = st.sound[TR[i].id] || {}; for (const k of ['kit', 'tune', 'decay', 'tone', 'vol', 'pan', 'rev', 'dly']) if (d[k] != null) x[k] = d[k]; }
+function pickPat(st, i, first) { // variante distinta de la actual (la 1 es la base del estilo)
+  const v = st.pat[TR[i].id] || [], cur = patStr(S.tracks[i].steps);
+  if (first) return v[0];
+  const alt = v.filter(p => p !== cur); return alt.length ? alt[Math.floor(Math.random() * alt.length)] : v[0];
+}
+function suggest(i) { const st = curStyle(); cmd(() => { const p = pickPat(st, i); if (p) S.tracks[i].steps = parsePat(p); }); }
+function styleSound(i) { cmd(() => applySound(curStyle(), i)); }
+function generate(first) {
+  const st = curStyle();
+  cmd(() => {
+    S.bpm = st.bpm; S.swing = st.swing; Object.assign(S.fx, st.fx);
+    for (let i = 0; i < NT; i++) { applySound(st, i); const p = first || Math.random() < 0.5 ? pickPat(st, i, true) : pickPat(st, i); S.tracks[i].steps = parsePat(p || ''); S.tracks[i].mute = S.tracks[i].solo = false; }
+  });
+}
+
+/* ---------- 10. Almacenamiento (localStorage, versionado, siempre en try/catch) ---------- */
+const KEY = 'dr11';
+let store = { v: DATA_V, lang: 'es', cur: null, pats: Object.create(null) };
+function loadStore() {
+  try { const d = JSON.parse(localStorage.getItem(KEY)); if (d && typeof d === 'object') { store.lang = d.lang === 'en' ? 'en' : 'es'; store.cur = d.cur || null; if (d.pats && typeof d.pats === 'object') for (const k of Object.keys(d.pats)) store.pats[k] = d.pats[k]; } } catch (e) { /* sin datos o bloqueado */ }
+}
+let saveT = 0, saveWarned = false;
+function saveStore() { try { store.cur = S; store.lang = lang; localStorage.setItem(KEY, JSON.stringify(store)); return true; } catch (e) { if (!saveWarned) { saveWarned = true; toast(t('storeErr')); } return false; } }
+const saveSoon = () => { clearTimeout(saveT); saveT = setTimeout(saveStore, 400); };
+
+/* ---------- 11. Interfaz ---------- */
+const ui = { sel: 0, mode: 'note', lane: 'vel', tab: 0, pads: [], rows: [], chips: [], laneEls: [], sliders: [], cur: -1 };
+let toastT = 0;
+function toast(msg, sticky) { const e = $('toast'); e.textContent = msg; e.style.display = 'block'; clearTimeout(toastT); if (!sticky) toastT = setTimeout(() => (e.style.display = 'none'), 2200); }
+// Tras cualquier cambio de estado: audio, pantalla y guardado
+function live() { if (G) G.sync(); refresh(); saveSoon(); }
+
+function slider(parent, key, min, max, step, get, set) {
+  const row = el('label', 'ctl'), lab = el('span'), inp = el('input'), out = el('output');
+  inp.type = 'range'; inp.min = min; inp.max = max; inp.step = step;
+  inp.addEventListener('input', () => { gestBegin(); set(+inp.value); if (G) G.sync(); out.textContent = fmt(+inp.value, step); saveSoon(); });
+  inp.addEventListener('change', gestEnd);
+  row.append(lab, inp, out); parent.append(row);
+  ui.sliders.push({ key, lab, inp, out, get, step });
+}
+const fmt = (v, step) => (step >= 1 ? (v > 0 ? '+' : '') + v : Math.round(v * 100));
+
+function buildUI() {
+  const grid = $('grid'), chips = $('chips');
+  TR.forEach((tr, i) => {
+    const chip = el('button', '', tr.id); chip.style.setProperty('--c', tr.c); chip.onclick = () => select(i); chips.append(chip); ui.chips.push(chip);
+    const row = el('div', 'row'), head = el('div', 'head'), nm = el('button', 'nm'), m = el('button', 'ms m', 'M'), s = el('button', 'ms s', 'S'), pads = el('div', 'pads');
+    row.style.setProperty('--c', tr.c);
+    nm.onclick = () => { select(i); audition(i); };
+    m.onclick = () => cmd(() => { S.tracks[i].mute = !S.tracks[i].mute; });
+    s.onclick = () => cmd(() => { S.tracks[i].solo = !S.tracks[i].solo; });
+    head.append(nm, m, s); row.append(head, pads); grid.append(row);
+    const ps = [];
+    for (let j = 0; j < NS; j++) { const p = el('button', 'pad'); p.setAttribute('aria-label', tr.id + ' ' + (j + 1)); p.addEventListener('click', () => tapPad(i, j)); pads.append(p); ps.push(p); }
+    ui.pads.push(ps); ui.rows.push({ row, nm, m, s });
+  });
+  // Carril: arrastrar para dibujar velocity o probabilidad de la pista seleccionada
+  const lane = $('lane');
+  for (let j = 0; j < NS; j++) { const d = el('div'); d.append(el('i')); lane.append(d); ui.laneEls.push(d); }
+  const drag = e => {
+    const r = lane.getBoundingClientRect(), j = clamp(Math.floor((e.clientX - r.left) / r.width * NS), 0, NS - 1), v = clamp(1 - (e.clientY - r.top) / r.height, 0, 1), p = S.tracks[ui.sel].steps[j];
+    if (ui.lane === 'vel') p.vel = clamp(Math.round(v * 20) / 20, 0.05, 1); else p.prob = clamp(Math.round(v * 20) * 5, 5, 100);
+    ui.laneEls[j].firstChild.style.height = (ui.lane === 'vel' ? p.vel * 100 : p.prob) + '%'; ui.pads[ui.sel][j].style.setProperty('--v', p.on ? 0.35 + p.vel * 0.65 : 1); ui.pads[ui.sel][j].classList.toggle('prob', p.on && p.prob < 100); saveSoon();
+  };
+  lane.addEventListener('pointerdown', e => { e.preventDefault(); try { lane.setPointerCapture(e.pointerId); } catch (_) {} gestBegin(); lane._d = true; drag(e); });
+  lane.addEventListener('pointermove', e => { if (lane._d) drag(e); });
+  const up = () => { if (lane._d) { lane._d = false; gestEnd(); } };
+  lane.addEventListener('pointerup', up); lane.addEventListener('pointercancel', up);
+  // Faders de pista y de efectos
+  const tc = $('trCtl'), cur = () => S.tracks[ui.sel];
+  [['vol', 0, 1, 0.01], ['pan', -1, 1, 0.01], ['tune', -12, 12, 1], ['decay', 0, 1, 0.01], ['tone', 0, 1, 0.01], ['rev', 0, 1, 0.01], ['dly', 0, 1, 0.01]].forEach(([k, a, b, st]) => slider(tc, k, a, b, st, () => cur()[k], v => { cur()[k] = v; }));
+  const fc = $('fxCtl');
+  [['frev', 'rev', 1], ['fdly', 'dly', 1], ['fb', 'fb', 0.8], ['sc', 'sc', 1], ['master', 'master', 1]].forEach(([lk, k, mx]) => slider(fc, lk, 0, mx, 0.01, () => S.fx[k], v => { S.fx[k] = v; }));
+  $('swing').addEventListener('input', e => { gestBegin(); S.swing = +e.target.value; saveSoon(); }); $('swing').addEventListener('change', gestEnd);
+  // Controles simples
+  $('play').onclick = () => (seq.playing ? stop() : play());
+  $('bpm').addEventListener('change', e => { cmd(() => { S.bpm = clamp(Math.round(+e.target.value) || S.bpm, 60, 200); }); e.target.value = S.bpm; });
+  $('undo').onclick = undo; $('redo').onclick = redo;
+  $('kit').onchange = e => cmd(() => { cur().kit = e.target.value; });
+  $('div').onchange = e => cmd(() => { S.fx.div = e.target.value; });
+  $('clr').onclick = () => cmd(() => { cur().steps = Array.from({ length: NS }, newStep); });
+  $('sug').onclick = $('sug2').onclick = () => suggest(ui.sel);
+  $('snd').onclick = () => styleSound(ui.sel);
+  $('gen').onclick = () => generate(false);
+  STYLES.forEach(s => { const o = el('option'); o.value = s.id; $('style').append(o); });
+  $('style').onchange = e => cmd(() => { S.style = e.target.value; });
+  $('mNote').onclick = () => { ui.mode = 'note'; refresh(); }; $('mAcc').onclick = () => { ui.mode = 'acc'; refresh(); };
+  $('lVel').onclick = () => { ui.lane = 'vel'; refresh(); }; $('lProb').onclick = () => { ui.lane = 'prob'; refresh(); };
+  document.querySelectorAll('#tabs button').forEach(b => (b.onclick = () => { ui.tab = +b.dataset.tab; refresh(); }));
+  $('blang').onclick = () => { lang = lang === 'es' ? 'en' : 'es'; refresh(); saveSoon(); };
+  $('bpat').onclick = patternsDialog; $('bwav').onclick = exportDialog;
+  $('modal').addEventListener('pointerdown', e => { if (e.target.id === 'modal') closeModal(); });
+  document.addEventListener('keydown', e => {
+    const tag = (e.target.tagName || '').toLowerCase(), typing = tag === 'input' && e.target.type !== 'range' || tag === 'select' || tag === 'button';
+    if (e.key === 'Escape') closeModal();
+    if (typing) return;
+    if (e.code === 'Space') { e.preventDefault(); seq.playing ? stop() : play(); }
+    else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') { e.preventDefault(); e.shiftKey ? redo() : undo(); }
+    else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') { e.preventDefault(); redo(); }
+  });
+  document.addEventListener('visibilitychange', () => { if (document.hidden) { gestEnd(); saveStore(); } else if (ctx && seq.playing && ctx.state !== 'running') ctx.resume(); });
+  window.addEventListener('pagehide', () => { gestEnd(); saveStore(); });
+  requestAnimationFrame(frame);
+}
+function select(i) { ui.sel = i; refresh(); const c = ui.chips[i], box = $('chips'); box.scrollLeft = c.offsetLeft - box.clientWidth / 2 + c.offsetWidth / 2; }
+function tapPad(i, j) {
+  if (ui.sel !== i) ui.sel = i;
+  cmd(() => { const p = S.tracks[i].steps[j]; if (ui.mode === 'acc') { if (p.on) p.acc = !p.acc; else { p.on = true; p.acc = true; } } else p.on = !p.on; });
+}
+// Pinta todo el estado en la interfaz sin recrear el DOM
+function refresh() {
+  document.documentElement.lang = lang;
+  document.querySelectorAll('[data-i18n]').forEach(e => (e.textContent = t(e.dataset.i18n)));
+  document.querySelectorAll('[data-i18n-title]').forEach(e => { e.title = t(e.dataset.i18nTitle); e.setAttribute('aria-label', e.title); });
+  $('blang').textContent = lang === 'es' ? 'EN' : 'ES';
+  const anySolo = S.tracks.some(x => x.solo);
+  S.tracks.forEach((x, i) => {
+    const r = ui.rows[i];
+    r.row.classList.toggle('sel', i === ui.sel); r.nm.textContent = TR[i].id + ' · ' + t('tr')[i];
+    r.m.classList.toggle('on', x.mute); r.s.classList.toggle('on', x.solo);
+    ui.chips[i].classList.toggle('sel', i === ui.sel); ui.chips[i].classList.toggle('muted', x.mute || (anySolo && !x.solo));
+    x.steps.forEach((p, j) => { const e = ui.pads[i][j]; e.classList.toggle('on', p.on); e.classList.toggle('acc', p.on && p.acc); e.classList.toggle('prob', p.on && p.prob < 100); e.style.setProperty('--v', p.on ? 0.35 + p.vel * 0.65 : 1); e.setAttribute('aria-pressed', p.on); });
+  });
+  const x = S.tracks[ui.sel];
+  $('lane').style.setProperty('--c', TR[ui.sel].c);
+  x.steps.forEach((p, j) => { const d = ui.laneEls[j]; d.classList.toggle('on', p.on); d.firstChild.style.height = (ui.lane === 'vel' ? p.vel * 100 : p.prob) + '%'; });
+  $('trTitle').textContent = TR[ui.sel].id + ' · ' + t('tr')[ui.sel]; $('trTitle').style.color = TR[ui.sel].c;
+  $('kit').value = x.kit; $('div').value = S.fx.div;
+  ui.sliders.forEach(s => { s.lab.textContent = t(s.key); const v = s.get(); if (document.activeElement !== s.inp || gest == null) s.inp.value = v; s.out.textContent = fmt(v, s.step); });
+  if (document.activeElement !== $('bpm')) $('bpm').value = S.bpm;
+  $('swing').value = S.swing;
+  $('play').textContent = seq.playing ? '■' : '▶'; $('play').classList.toggle('on', seq.playing);
+  $('undo').disabled = !H.u.length && gest == null; $('redo').disabled = !H.r.length;
+  $('mNote').classList.toggle('on', ui.mode === 'note'); $('mAcc').classList.toggle('on', ui.mode === 'acc');
+  $('lVel').classList.toggle('on', ui.lane === 'vel'); $('lProb').classList.toggle('on', ui.lane === 'prob');
+  document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', +b.dataset.tab === ui.tab));
+  ['pTrack', 'pFx', 'pAsst'].forEach((id, k) => $(id).classList.toggle('show', k === ui.tab));
+  const st = curStyle(); $('style').value = st.id; [...$('style').options].forEach((o, k) => (o.textContent = STYLES[k].name[lang] + ' · ' + STYLES[k].bpm)); $('sdesc').textContent = st.desc[lang];
+}
+// Bucle de dibujo: paso actual iluminado (sincronizado con el reloj de audio) y medidor de pico
+let mBuf = null, clipHold = 0;
+function frame() {
+  requestAnimationFrame(frame);
+  let cur = -1;
+  if (seq.playing && ctx) { const now = ctx.currentTime; while (seq.q.length > 1 && seq.q[1].t <= now) seq.q.shift(); if (seq.q.length && seq.q[0].t <= now) cur = seq.q[0].st; }
+  if (cur !== ui.cur) { for (let i = 0; i < NT; i++) { if (ui.cur >= 0) ui.pads[i][ui.cur].classList.remove('cur'); if (cur >= 0) ui.pads[i][cur].classList.add('cur'); } ui.cur = cur; }
+  if (!analyser) return;
+  if (!mBuf) mBuf = new Float32Array(analyser.fftSize);
+  let pk = 0;
+  if (analyser.getFloatTimeDomainData) { analyser.getFloatTimeDomainData(mBuf); for (let i = 0; i < mBuf.length; i++) { const a = Math.abs(mBuf[i]); if (a > pk) pk = a; } }
+  const cv = $('meter'), g = cv.getContext('2d'), w = cv.width, h = cv.height;
+  if (pk > 0.97) clipHold = 40; else if (clipHold) clipHold--;
+  g.clearRect(0, 0, w, h); g.fillStyle = clipHold ? '#ff4d4d' : pk > 0.7 ? '#ffd400' : '#00d1ff'; g.fillRect(0, 0, Math.min(1, pk) * w, h);
+}
+/* --- Diálogos --- */
+function openModal(title) { const b = $('mbox'); b.textContent = ''; b.append(el('h3', '', title)); $('modal').classList.add('open'); return b; }
+function closeModal() { $('modal').classList.remove('open'); }
+function closeBtn(b) { const r = el('div', 'btns'), c = el('button', '', t('close')); c.onclick = closeModal; r.append(c); b.append(r); }
+function patternsDialog() {
+  const b = openModal(t('patterns')), row = el('div', 'li'), inp = el('input'), sv = el('button', 'big', t('save'));
+  inp.type = 'text'; inp.maxLength = 30; inp.placeholder = t('name'); inp.setAttribute('aria-label', t('name'));
+  sv.onclick = () => { let n = inp.value.trim(); if (!n) { let k = 1; while (store.pats['Pattern ' + k]) k++; n = 'Pattern ' + k; } else if (store.pats[n] && !confirm(t('overwrite'))) return; store.pats[n] = JSON.parse(JSON.stringify(S)); if (saveStore()) toast(t('saved')); patternsDialog(); };
+  row.append(inp, sv); b.append(row);
+  const names = Object.keys(store.pats);
+  if (!names.length) b.append(el('p', '', t('none')));
+  names.forEach(n => {
+    const li = el('div', 'li'), ld = el('button', '', t('load')), dl = el('button', '', t('del'));
+    ld.onclick = () => { cmd(() => { S = migrate(store.pats[n]); }); closeModal(); toast(t('loaded')); };
+    dl.onclick = () => { if (confirm(t('confirmDel'))) { delete store.pats[n]; saveStore(); patternsDialog(); } };
+    li.append(el('span', '', n), ld, dl); b.append(li);
+  });
+  const r = el('div', 'btns'), nw = el('button', '', t('newPat'));
+  nw.onclick = () => { cmd(() => { const st = S.style; S = newState(); S.style = st; }); closeModal(); };
+  r.append(nw); b.append(r); closeBtn(b);
+}
+function exportDialog() {
+  const b = openModal(t('exportT')), row = el('div', 'li'), sel = el('select'), go = el('button', 'big', t('exportB'));
+  [1, 2, 4, 8, 16].forEach(n => { const o = el('option', '', n); o.value = n; if (n === 4) o.selected = true; sel.append(o); });
+  sel.setAttribute('aria-label', t('bars'));
+  go.onclick = () => { closeModal(); exportWav(+sel.value); };
+  row.append(el('span', '', t('bars')), sel, go); b.append(row, el('p', '', t('exportNote'))); closeBtn(b);
+}
+
+/* ---------- Arranque ---------- */
+loadStore(); lang = store.lang;
+S = store.cur ? migrate(store.cur) : newState();
+buildUI();
+if (!store.cur) { generate(true); H.u.length = 0; } // primer arranque: groove base del estilo, listo para sonar
+refresh();
+// Gancho para pruebas automáticas (no afecta al uso normal)
+window.DR11 = { VERSION, get S() { return S; }, seq, renderOffline, wavBlob, migrate, undo, redo, STYLES };
+</script>
+</body>
+</html>
